@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Browse remote jobs from Himalayas and filter by role, country, category, or company.">
+	<title>Find Jobs | Job Portal</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/job_assistant.css') }}">
+	<style>
+		:root {
+			--ink: #17243b;
+			--muted: #66738a;
+			--brand: #2457d6;
+			--line: #e4e9f1;
+			--surface: #f3f6fb;
+		}
+		body {
+			min-height: 100vh;
+			color: var(--ink);
+			background: var(--surface);
+			font-family: Inter, "Segoe UI", Arial, sans-serif;
+		}
+		.site-header {
+			background: #fff;
+			border-bottom: 1px solid var(--line);
+		}
+		.header-inner,
+		.page-shell {
+			width: min(1480px, calc(100% - 64px));
+			margin: 0 auto;
+		}
+		.header-inner {
+			min-height: 58px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 28px;
+		}
+		.brand {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			color: var(--ink);
+			font-size: 19px;
+			font-weight: 800;
+			text-decoration: none;
+		}
+		.brand-logo {
+			width: 40px;
+			height: 40px;
+			object-fit: contain;
+		}
+		.header-links {
+			display: flex;
+			align-items: center;
+			gap: 18px;
+		}
+		.header-links a {
+			color: #47546b;
+			font-size: 14px;
+			font-weight: 650;
+			text-decoration: none;
+		}
+		.profile-menu {
+			position: relative;
+		}
+		.profile-menu summary {
+			display: flex;
+			cursor: pointer;
+			list-style: none;
+		}
+		.profile-menu summary::-webkit-details-marker {
+			display: none;
+		}
+		.profile-menu-content {
+			position: absolute;
+			z-index: 20;
+			top: calc(100% + 10px);
+			right: 0;
+			min-width: 190px;
+			padding: 7px;
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 10px;
+			box-shadow: 0 10px 28px rgba(27, 45, 80, 0.14);
+		}
+		.header-links .profile-menu-content a {
+			display: block;
+			padding: 10px 11px;
+			border-radius: 7px;
+			color: var(--ink);
+		}
+		.header-links .profile-menu-content a:hover {
+			background: #f3f6fb;
+		}
+		.profile-icon {
+			width: 36px;
+			height: 36px;
+			flex: 0 0 36px;
+			display: inline-grid;
+			place-items: center;
+			overflow: hidden;
+			border-radius: 50%;
+			color: #fff;
+			background: var(--brand);
+			font-size: 14px;
+			font-weight: 800;
+			object-fit: cover;
+		}
+		.intro {
+			padding: 0 0 24px;
+		}
+		.eyebrow {
+			margin-bottom: 9px;
+			color: var(--brand);
+			font-size: 12px;
+			font-weight: 800;
+			letter-spacing: 1px;
+			text-transform: uppercase;
+		}
+		h1 {
+			margin: 0;
+			font-size: 34px;
+			font-weight: 800;
+		}
+		.intro-copy {
+			max-width: 650px;
+			margin: 10px 0 0;
+			color: var(--muted);
+			line-height: 1.6;
+		}
+		.search-panel {
+			margin-bottom: 26px;
+			padding: 20px;
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 12px;
+			box-shadow: 0 8px 24px rgba(27, 45, 80, 0.045);
+		}
+		.filter-grid {
+			display: grid;
+			grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr)) auto;
+			gap: 14px;
+			align-items: end;
+		}
+		.form-label {
+			color: #46536a;
+			font-size: 12px;
+			font-weight: 700;
+		}
+		.form-control,
+		.form-select,
+		.filter-grid .btn {
+			min-height: 44px;
+			border-radius: 8px;
+			font-size: 14px;
+		}
+		.form-control:focus,
+		.form-select:focus {
+			border-color: #9bb5ee;
+			box-shadow: 0 0 0 3px rgba(36, 87, 214, 0.12);
+		}
+		.application-image-preview {
+			display: block;
+			margin-top: 8px;
+			border: 1px solid var(--line);
+			background: #f3f6fb;
+			object-fit: cover;
+		}
+		.application-profile-preview {
+			width: 64px;
+			height: 64px;
+			border-radius: 50%;
+		}
+		.application-cover-preview {
+			width: min(100%, 240px);
+			height: 96px;
+			border-radius: 8px;
+		}
+		.filter-grid .btn {
+			padding-inline: 18px;
+			border-radius: 8px;
+			font-weight: 700;
+		}
+		.results-heading {
+			display: flex;
+			justify-content: space-between;
+			align-items: baseline;
+			gap: 12px;
+			margin-bottom: 14px;
+		}
+		.results-heading h2 {
+			margin: 0;
+			font-size: 22px;
+			font-weight: 800;
+		}
+		.results-count {
+			color: var(--muted);
+			font-size: 13px;
+		}
+		.job-list {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			grid-auto-rows: 340px;
+			gap: 18px;
+			padding-bottom: 50px;
+		}
+		.job-card {
+			display: flex;
+			min-width: 0;
+			min-height: 0;
+			height: 100%;
+			flex-direction: column;
+			overflow: hidden;
+			padding: 22px;
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 14px;
+			box-shadow: 0 5px 16px rgba(27, 45, 80, 0.035);
+			transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+		}
+		.job-card:hover {
+			transform: translateY(-3px);
+			border-color: #c5d3ec;
+			box-shadow: 0 12px 28px rgba(27, 45, 80, 0.09);
+		}
+		.job-card-head {
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-start;
+			gap: 16px;
+		}
+		.job-card h3 {
+			display: -webkit-box;
+			-webkit-box-orient: vertical;
+			-webkit-line-clamp: 2;
+			overflow: hidden;
+			margin: 0 0 5px;
+			font-size: 19px;
+			font-weight: 750;
+			line-height: 1.35;
+			overflow-wrap: anywhere;
+		}
+		.company-name {
+			margin: 0;
+			color: #526078;
+			font-size: 14px;
+			font-weight: 600;
+			overflow-wrap: anywhere;
+		}
+		.company-brand {
+			display: flex;
+			min-width: 0;
+			align-items: center;
+			gap: 12px;
+		}
+		.company-logo {
+			position: relative;
+			display: grid;
+			width: 48px;
+			height: 48px;
+			flex: 0 0 48px;
+			place-items: center;
+			overflow: hidden;
+			color: #2457d6;
+			background: #edf3ff;
+			border: 1px solid #e1e8f4;
+			border-radius: 12px;
+			font-size: 18px;
+			font-weight: 800;
+			text-transform: uppercase;
+		}
+		.company-logo img {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			padding: 4px;
+			background: #fff;
+			object-fit: contain;
+		}
+		.company-brand-copy {
+			min-width: 0;
+		}
+		.category-label {
+			flex: 0 0 auto;
+			max-width: 100%;
+			padding: 7px 10px;
+			color: #224fae;
+			background: #edf3ff;
+			border-radius: 6px;
+			font-size: 11px;
+			font-weight: 700;
+			overflow-wrap: anywhere;
+		}
+		.job-details {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 12px;
+			margin: 16px 0 0;
+			color: #526078;
+			font-size: 13px;
+			line-height: 1.45;
+		}
+		.job-details strong {
+			display: block;
+			color: var(--ink);
+			font-weight: 700;
+			overflow-wrap: anywhere;
+		}
+		.modal .job-details {
+			margin-top: 0;
+		}
+		.job-card-footer {
+			margin-top: auto;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			padding-top: 12px;
+			border-top: 1px solid #edf0f5;
+		}
+		.job-description-detail {
+			white-space: pre-line;
+			overflow-wrap: anywhere;
+		}
+		.source-link {
+			color: var(--muted);
+			font-size: 12px;
+		}
+		.source-link a {
+			color: var(--brand);
+			font-weight: 700;
+		}
+		.apply-link {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-height: 38px;
+			padding: 0 13px;
+			color: #fff;
+			background: var(--brand);
+			border-radius: 8px;
+			font-size: 13px;
+			font-weight: 700;
+			text-decoration: none;
+			white-space: nowrap;
+		}
+		.apply-link:hover {
+			color: #fff;
+			background: #1944b0;
+		}
+		.empty-state {
+			padding: 36px 20px;
+			text-align: center;
+			background: #fff;
+			border: 1px dashed #cbd4e1;
+			border-radius: 12px;
+		}
+		.empty-state h3 {
+			font-size: 18px;
+			font-weight: 750;
+		}
+		.empty-state p,
+		.api-note {
+			color: var(--muted);
+		}
+		.api-note {
+			margin: -8px 0 20px;
+			font-size: 12px;
+		}
+		footer {
+			padding: 20px 0;
+			color: var(--muted);
+			background: #fff;
+			border-top: 1px solid var(--line);
+			font-size: 12px;
+		}
+		@media (max-width: 900px) {
+			.filter-grid {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+			}
+			.filter-grid .submit-filter {
+				grid-column: span 2;
+			}
+			.job-list {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+			}
+		}
+		@media (max-width: 600px) {
+			.header-inner,
+			.page-shell {
+				width: calc(100% - 32px);
+			}
+			.header-links {
+				gap: 12px;
+			}
+			.header-links a {
+				font-size: 12px;
+			}
+			h1 {
+				font-size: 29px;
+			}
+			.filter-grid {
+				grid-template-columns: 1fr;
+			}
+			.filter-grid .submit-filter {
+				grid-column: auto;
+			}
+			.job-card {
+				padding: 19px;
+			}
+			.job-card-head {
+				flex-direction: column-reverse;
+				gap: 9px;
+			}
+			.job-list {
+				grid-template-columns: 1fr;
+				gap: 14px;
+			}
+			.job-details {
+				gap: 10px;
+			}
+		}
+	</style>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/portal_ui.css') }}">
+</head>
+<body>
+	<header class="site-header">
+		<div class="header-inner">
+			<a href="{{ url_for('jobs' if current_user.is_authenticated else 'home') }}" class="brand">
+				<img src="{{ url_for('template_logo') }}" alt="Job Portal Logo" class="brand-logo">
+				<span>Job Portal</span>
+			</a>
+			<div class="header-account">{% include "_header_profile.html" %}</div>
+		</div>
+	</header>
+
+	<main class="page-shell">
+		{% set extra_toast_messages = [("warning", api_error)] if api_error else [] %}
+		{% include "_flash_toasts.html" %}
+
+		<section class="intro" aria-labelledby="page-title">
+			<h1 id="page-title">Find your next opportunity.</h1>
+			<p class="intro-copy">Browse remote jobs, save roles for later, and apply through each listing's application page.</p>
+		</section>
+
+		<form class="search-panel" method="GET" action="{{ url_for('jobs') }}" aria-label="Filter remote jobs">
+			<div class="filter-grid">
+				<div>
+					<label class="form-label" for="q">Job title or keyword</label>
+					<input class="form-control" id="q" name="q" type="search" placeholder="e.g. Python developer" value="{{ filters.q }}">
+				</div>
+				<div>
+					<label class="form-label" for="location">Country</label>
+					<input class="form-control" id="location" name="location" type="search" placeholder="e.g. India or Worldwide" value="{{ filters.location }}">
+				</div>
+				<div>
+					<label class="form-label" for="month">Posted month</label>
+					<input class="form-control" id="month" name="month" type="month" value="{{ filters.month }}">
+				</div>
+				<div>
+					<label class="form-label" for="date">Posted date</label>
+					<input class="form-control" id="date" name="date" type="date" value="{{ filters.date }}">
+				</div>
+				<div class="submit-filter">
+					<button class="btn btn-primary w-100" type="submit">Search jobs</button>
+				</div>
+			</div>
+		</form>
+
+		<section aria-labelledby="results-title">
+			<div class="results-heading">
+				<h2 id="results-title">Remote job listings</h2>
+				<span class="results-count">{{ jobs|length }} jobs</span>
+			</div>
+			<p class="api-note">Listings provided by Himalayas. The feed is paginated, with up to 20 jobs per page.</p>
+
+			{% if jobs %}
+				<div class="job-list">
+					{% for job in jobs %}
+						<article class="job-card{% if job.is_portal_post %} job-card-portal{% endif %}" id="job-card-{{ loop.index0 }}">
+							<div class="job-card-head">
+								<div class="company-brand">
+									<span class="company-logo" aria-hidden="true">
+										{{ job.company|first|upper }}
+										{% if job.company_logo %}
+											<img src="{{ job.company_logo }}" alt="" loading="lazy" referrerpolicy="no-referrer">
+										{% endif %}
+									</span>
+									<div class="company-brand-copy">
+									<h3>{{ job.title }}</h3>
+									<p class="company-name">{{ job.company }}</p>
+									</div>
+								</div>
+								<span class="category-label">{{ job.category }}</span>
+							</div>
+							<div class="job-details">
+								<span>Location: <strong>{{ job.location }}</strong></span>
+								<span>Type: <strong>{{ job.type }}</strong></span>
+								<span>Salary: <strong>{{ job.salary }}</strong></span>
+								{% if job.published %}
+									<span>Posted: <strong>{{ job.published }}</strong></span>
+								{% endif %}
+							</div>
+							{% if job.is_portal_post %}
+								<div class="job-details mt-2">
+									<span>Experience: <strong>{{ job.experience_level }}</strong></span>
+								</div>
+							{% endif %}
+							<div class="job-card-footer">
+								{% if job.is_portal_post %}
+									<span class="source-link">Posted by {{ job.company }}</span>
+									<button class="apply-link border-0" type="button" data-bs-toggle="modal" data-bs-target="#job-details-{{ job.post_id }}">Apply on Job</button>
+								{% else %}
+									<span class="source-link">Listing source: Himalayas</span>
+									<a class="apply-link" href="{{ job.application_link }}" target="_blank" rel="noopener noreferrer">Apply on Job Site</a>
+								{% endif %}
+								{% if current_user.is_authenticated and current_user.role == "job_seeker" %}
+									<form class="save-job-form" method="POST" action="{{ url_for('save_job') }}">
+										<input type="hidden" name="_csrf_token" value="{{ application_csrf_token }}">
+										<input type="hidden" name="next" value="{{ request.full_path }}">
+										{% if job.is_portal_post %}
+											<input type="hidden" name="job_id" value="{{ job.post_id }}">
+										{% else %}
+											<input type="hidden" name="job_token" value="{{ application_token(job) }}">
+										{% endif %}
+										{% if job.job_key in saved_job_keys %}
+											<button class="btn btn-sm btn-outline-secondary" type="submit" name="action" value="remove">Remove saved</button>
+										{% else %}
+											<button class="btn btn-sm btn-outline-primary" type="submit" name="action" value="save">Save job</button>
+										{% endif %}
+									</form>
+								{% elif not current_user.is_authenticated %}
+									<a class="btn btn-sm btn-outline-primary" href="{{ url_for('login', next=request.full_path) }}">Log in to save</a>
+								{% endif %}
+							</div>
+						</article>
+						{% if job.is_portal_post %}
+							<div class="modal fade" id="job-details-{{ job.post_id }}" tabindex="-1" aria-labelledby="job-details-title-{{ job.post_id }}" aria-hidden="true">
+								<div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
+									<div class="modal-content">
+										<div class="modal-header">
+											<div>
+												<h2 class="modal-title fs-5" id="job-details-title-{{ job.post_id }}">{{ job.title }}</h2>
+												<p class="text-secondary mb-0">{{ job.company }} · {{ job.location }}</p>
+											</div>
+											<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+										</div>
+										<div class="modal-body">
+											<div class="job-details mt-0">
+												<span>Employment type:<strong>{{ job.type }}</strong></span>
+												<span>Experience:<strong>{{ job.experience_level }}</strong></span>
+												<span>Salary:<strong>{{ job.salary }}</strong></span>
+												<span>Posted:<strong>{{ job.published }}</strong></span>
+											</div>
+											<h3 class="fs-6 fw-bold mt-4">Job description</h3>
+											<p class="job-description-detail">{{ job.excerpt }}</p>
+											<h3 class="fs-6 fw-bold mt-4">Key skills</h3>
+											<p class="job-description-detail">{{ job.skills }}</p>
+											<h3 class="fs-6 fw-bold mt-4">Responsibilities and requirements</h3>
+											<p class="job-description-detail">{{ job.requirements }}</p>
+										</div>
+										<div class="modal-footer">
+											<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+											{% if job.source_url %}
+												<a class="btn btn-outline-primary" href="{{ job.source_url }}" target="_blank" rel="noopener noreferrer">Company application link</a>
+											{% endif %}
+											<button class="btn btn-primary open-application-modal" type="button" data-application-modal="#job-application-{{ job.post_id }}">Apply on Job Portal</button>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="modal fade" id="job-application-{{ job.post_id }}" tabindex="-1" aria-labelledby="job-application-title-{{ job.post_id }}" aria-hidden="true">
+								<div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
+									<div class="modal-content">
+										<div class="modal-header">
+											<div>
+												<h2 class="modal-title fs-5" id="job-application-title-{{ job.post_id }}">Apply on Job Portal</h2>
+												<p class="text-secondary mb-0">{{ job.title }} · {{ job.company }}</p>
+											</div>
+											<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+										</div>
+										{% if current_user.is_authenticated and current_user.role == "job_seeker" %}
+											<div class="modal-body">
+												<form method="POST" action="{{ url_for('apply_portal_job', job_id=job.post_id) }}" enctype="multipart/form-data">
+													<input type="hidden" name="_csrf_token" value="{{ application_csrf_token }}">
+													<div class="row g-3">
+														<div class="col-md-6">
+															<label class="form-label" for="application-name-{{ job.post_id }}">Full name *</label>
+															<input class="form-control" id="application-name-{{ job.post_id }}" name="name" required maxlength="100" value="{{ current_user.application_name or current_user.name }}">
+														</div>
+														<div class="col-md-6">
+															<label class="form-label" for="application-email-{{ job.post_id }}">Email address *</label>
+															<input class="form-control" id="application-email-{{ job.post_id }}" name="email" type="email" required maxlength="120" value="{{ current_user.application_email or current_user.email }}">
+														</div>
+														<div class="col-md-6">
+															<label class="form-label" for="application-phone-{{ job.post_id }}">Phone number *</label>
+															<input class="form-control" id="application-phone-{{ job.post_id }}" name="phone" type="tel" required maxlength="40" value="{{ current_user.phone or '' }}">
+														</div>
+														<div class="col-md-6">
+															<label class="form-label" for="application-profile-image-{{ job.post_id }}">Profile image</label>
+															<input class="form-control" id="application-profile-image-{{ job.post_id }}" name="profile_image" type="file" accept=".jpg,.jpeg,.png,.webp">
+															<div class="form-text">Optional; JPG, PNG, or WebP, maximum 8 MB.</div>
+															{% if current_user.profile_image_filename %}
+																<div class="form-text mt-2">Current profile image</div>
+																<img class="application-image-preview application-profile-preview" src="{{ url_for('application_upload', filename=current_user.profile_image_filename) }}" alt="Your saved profile image">
+																<div class="form-text">Leave this blank to keep it.</div>
+															{% endif %}
+														</div>
+														<div class="col-md-6">
+															<label class="form-label" for="application-cover-image-{{ job.post_id }}">Cover image</label>
+															<input class="form-control" id="application-cover-image-{{ job.post_id }}" name="cover_image" type="file" accept=".jpg,.jpeg,.png,.webp">
+															<div class="form-text">Optional; JPG, PNG, or WebP, maximum 8 MB.</div>
+															{% if current_user.cover_image_filename %}
+																<div class="form-text mt-2">Current cover image</div>
+																<img class="application-image-preview application-cover-preview" src="{{ url_for('application_upload', filename=current_user.cover_image_filename) }}" alt="Your saved cover image">
+																<div class="form-text">Leave this blank to keep it.</div>
+															{% endif %}
+														</div>
+														<div class="col-12">
+															<label class="form-label" for="application-resume-{{ job.post_id }}">Resume *</label>
+															{% if has_saved_resume %}
+																<div class="form-check">
+																	<input class="form-check-input" id="existing-resume-{{ job.post_id }}" name="resume_choice" type="radio" value="existing" checked>
+																	<label class="form-check-label" for="existing-resume-{{ job.post_id }}">Use saved resume: {{ current_user.resume_original_name }}</label>
+																</div>
+																<div class="form-check mb-2">
+																	<input class="form-check-input replace-resume-choice" id="new-resume-choice-{{ job.post_id }}" name="resume_choice" type="radio" value="new">
+																	<label class="form-check-label" for="new-resume-choice-{{ job.post_id }}">Upload a new resume</label>
+																</div>
+															{% else %}
+																<input type="hidden" name="resume_choice" value="new">
+															{% endif %}
+															<input class="form-control application-resume-input" id="application-resume-{{ job.post_id }}" name="resume" type="file" accept=".pdf,.doc,.docx" {% if not has_saved_resume %}required{% endif %}>
+															<div class="form-text">PDF, DOC, or DOCX; maximum 8 MB.</div>
+														</div>
+														<div class="col-12">
+															<div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+																<label class="form-label mb-0" for="application-cover-letter-{{ job.post_id }}">Cover letter</label>
+																<button class="btn btn-sm btn-outline-primary enhance-cover-letter" type="button"
+																        data-cover-letter="#application-cover-letter-{{ job.post_id }}"
+																        data-status="#cover-letter-status-{{ job.post_id }}"
+																        data-title="{{ job.title }}" data-company="{{ job.company }}"
+																        data-location="{{ job.location }}" data-employment-type="{{ job.type }}"
+																        data-experience-level="{{ job.experience_level }}" data-salary="{{ job.salary }}"
+																        data-description="{{ job.excerpt }}" data-skills="{{ job.skills }}"
+																        data-requirements="{{ job.requirements }}"
+																        {% if not job_assistant_enabled %}disabled title="Configure GEMINI_API_KEY to enable AI"{% endif %}>Use AI to enhance writing</button>
+															</div>
+															<textarea class="form-control" id="application-cover-letter-{{ job.post_id }}" name="cover_letter" maxlength="5000" rows="4" placeholder="Tell us why you are a good fit for this role."></textarea>
+															<div class="form-text" id="cover-letter-status-{{ job.post_id }}" aria-live="polite">
+																{% if not job_assistant_enabled %}AI writing is unavailable. Configure GEMINI_API_KEY and restart Flask.{% else %}Optional. AI can draft a letter using the job details.{% endif %}
+															</div>
+														</div>
+													</div>
+													<div class="d-flex justify-content-end gap-2 mt-4">
+														<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+														<button class="btn btn-primary" type="submit">Submit application</button>
+													</div>
+												</form>
+											</div>
+										{% else %}
+											<div class="modal-body">
+												<p>Sign in or create a job-seeker account to apply. Your application will be saved and shared with the employer.</p>
+											</div>
+											<div class="modal-footer">
+												{% if current_user.is_authenticated %}
+													<a class="btn btn-outline-primary" href="{{ url_for('apply_portal_job', job_id=job.post_id) }}">Continue as job seeker</a>
+												{% else %}
+													<a class="btn btn-outline-primary" href="{{ url_for('register', role='job_seeker', next=url_for('jobs', apply_job_id=job.post_id)) }}">Create job-seeker account</a>
+													<a class="btn btn-primary" href="{{ url_for('login', next=url_for('jobs', apply_job_id=job.post_id)) }}">Log in to apply</a>
+												{% endif %}
+											</div>
+										{% endif %}
+									</div>
+								</div>
+							</div>
+						{% endif %}
+					{% endfor %}
+				</div>
+			{% elif not api_error %}
+				<div class="empty-state">
+					<h3>No matching remote jobs found</h3>
+					<p>Try changing a filter to see more listings.</p>
+					<a class="btn btn-outline-primary" href="{{ url_for('jobs') }}">Clear filters</a>
+				</div>
+			{% endif %}
+			{% if has_next or has_previous %}
+				<div class="d-flex justify-content-center gap-2 pb-5">
+					{% if search_mode and page > 1 %}
+						<a class="btn btn-outline-primary" href="{{ url_for('jobs', q=filters.q, location=filters.location, company=filters.company, month=filters.month, date=filters.date, page=page - 1) }}" aria-label="Previous page" title="Previous page">&lt;</a>
+					{% elif not search_mode and has_previous %}
+						<a class="btn btn-outline-primary" href="{{ url_for('jobs', month=filters.month, date=filters.date, cursor=cursor_history[-1], cursor_history=cursor_history[:-1]) }}" aria-label="Previous 20 jobs" title="Previous 20 jobs">&lt;</a>
+					{% endif %}
+					{% if search_mode %}
+						{% if has_next %}
+							<a class="btn btn-outline-primary" href="{{ url_for('jobs', q=filters.q, location=filters.location, company=filters.company, month=filters.month, date=filters.date, page=page + 1) }}" aria-label="Next page" title="Next page">&gt;</a>
+						{% endif %}
+					{% else %}
+						{% if has_next %}
+							<a class="btn btn-outline-primary" href="{{ url_for('jobs', month=filters.month, date=filters.date, cursor=next_cursor, cursor_history=cursor_history + [current_cursor]) }}" aria-label="Next 20 jobs" title="Next 20 jobs">&gt;</a>
+						{% endif %}
+					{% endif %}
+				</div>
+			{% endif %}
+		</section>
+	</main>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		document.querySelectorAll(".save-job-form").forEach((form) => {
+			form.addEventListener("submit", async (event) => {
+				event.preventDefault();
+
+				const button = event.submitter || form.querySelector('button[type="submit"]');
+				const formData = new FormData(form);
+				if (event.submitter?.name) {
+					formData.set(event.submitter.name, event.submitter.value);
+				}
+				if (button) button.disabled = true;
+
+				try {
+					const response = await fetch(form.getAttribute("action"), {
+						method: "POST",
+						headers: {"X-Requested-With": "XMLHttpRequest"},
+						body: formData
+					});
+					let result;
+					if (response.headers.get("content-type")?.includes("application/json")) {
+						result = await response.json();
+					} else if (
+						response.ok &&
+						response.redirected &&
+						new URL(response.url).pathname === window.location.pathname
+					) {
+						const redirectedPage = new DOMParser().parseFromString(
+							await response.text(),
+							"text/html"
+						);
+						const toast = redirectedPage.querySelector(".flash-toast");
+						const message = toast?.querySelector(".flash-toast-message")?.textContent?.trim();
+						if (!message) {
+							throw new Error("Could not update saved jobs. Please try again.");
+						}
+						result = {
+							message,
+							category: [...toast.classList]
+								.find((className) => className.startsWith("flash-toast--"))
+								?.replace("flash-toast--", "") || "info",
+							saved: formData.get("action") === "save"
+						};
+					} else {
+						throw new Error("Could not update saved jobs. Please try again.");
+					}
+					if (!response.ok) {
+						throw new Error(result.message || result.error || "Could not update saved jobs. Please try again.");
+					}
+
+					if (button) {
+						button.value = result.saved ? "remove" : "save";
+						button.textContent = result.saved ? "Remove saved" : "Save job";
+						button.classList.toggle("btn-outline-primary", !result.saved);
+						button.classList.toggle("btn-outline-secondary", result.saved);
+					}
+					window.showFlashToast(result.message, result.category);
+				} catch (error) {
+					window.showFlashToast(error.message, "danger");
+				} finally {
+					if (button) button.disabled = false;
+				}
+			});
+		});
+
+		document.querySelectorAll(".company-logo img").forEach((logo) => {
+			logo.addEventListener("error", () => logo.remove(), {once: true});
+		});
+
+		document.querySelectorAll(".enhance-cover-letter").forEach((button) => {
+			button.addEventListener("click", async () => {
+				const form = button.closest("form");
+				const coverLetter = form?.querySelector(button.dataset.coverLetter);
+				const status = form?.querySelector(button.dataset.status);
+				const csrfToken = form?.elements.namedItem("_csrf_token")?.value;
+				if (!coverLetter || !status || !csrfToken) {
+					if (status) status.textContent = "Could not prepare the cover letter request. Refresh the page and try again.";
+					return;
+				}
+
+				button.disabled = true;
+				const originalText = button.textContent;
+				button.textContent = "Writing...";
+				status.textContent = "Creating a professional cover letter for this role...";
+				try {
+					const response = await fetch("{{ url_for('generate_cover_letter') }}", {
+						method: "POST",
+						headers: {"Content-Type": "application/json"},
+						body: JSON.stringify({
+							csrf_token: csrfToken,
+							title: button.dataset.title,
+							company: button.dataset.company,
+							location: button.dataset.location,
+							employment_type: button.dataset.employmentType,
+							experience_level: button.dataset.experienceLevel,
+							salary: button.dataset.salary,
+							description: button.dataset.description,
+							skills: button.dataset.skills,
+							requirements: button.dataset.requirements,
+							draft: coverLetter.value
+						})
+					});
+					const result = await response.json();
+					if (!response.ok) throw new Error(result.error || "AI could not write the cover letter.");
+					coverLetter.value = result.cover_letter;
+					status.textContent = "Draft created. Review and edit it before submitting your application.";
+				} catch (error) {
+					status.textContent = error.message || "AI could not write the cover letter. Please try again.";
+				} finally {
+					button.disabled = false;
+					button.textContent = originalText;
+				}
+			});
+		});
+
+		document.querySelectorAll(".open-application-modal").forEach((button) => {
+			button.addEventListener("click", () => {
+				const detailsModal = button.closest(".modal");
+				const applicationModal = document.querySelector(button.dataset.applicationModal);
+				if (!applicationModal) return;
+				detailsModal.addEventListener("hidden.bs.modal", () => {
+					bootstrap.Modal.getOrCreateInstance(applicationModal).show();
+				}, {once: true});
+				bootstrap.Modal.getOrCreateInstance(detailsModal).hide();
+			});
+		});
+
+		document.querySelectorAll(".modal").forEach((modal) => {
+			modal.querySelectorAll(".replace-resume-choice").forEach((choice) => {
+				choice.addEventListener("change", () => {
+					const resumeInput = modal.querySelector(".application-resume-input");
+					resumeInput.required = choice.checked;
+				});
+			});
+			modal.querySelectorAll('input[name="resume_choice"][value="existing"]').forEach((choice) => {
+				choice.addEventListener("change", () => {
+					const resumeInput = modal.querySelector(".application-resume-input");
+					resumeInput.required = false;
+				});
+			});
+		});
+
+		const openApplicationJobId = {{ open_application_job_id|tojson }};
+		if (openApplicationJobId) {
+			const applicationModal = document.getElementById(`job-application-${openApplicationJobId}`);
+			if (applicationModal) bootstrap.Modal.getOrCreateInstance(applicationModal).show();
+		}
+	</script>
+	{% include "_job_assistant.html" %}
+
+	<footer>
+		<div class="page-shell">Job Portal · Remote listings sourced from Himalayas</div>
+	</footer>
+</body>
+</html>

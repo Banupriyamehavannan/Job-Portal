@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Review saved jobs and track external applications.">
+	<title>Saved Jobs | Job Portal</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/portal_ui.css') }}">
+	<style>
+		:root {
+			--ink: #17243b;
+			--muted: #66738a;
+			--line: #e4e9f1;
+		}
+		body {
+			min-height: 100vh;
+			color: var(--ink);
+			background: #f3f6fb;
+			font-family: Inter, "Segoe UI", Arial, sans-serif;
+		}
+		.site-header {
+			background: #fff;
+			border-bottom: 1px solid var(--line);
+		}
+		.header-inner,
+		.page-shell {
+			width: min(100% - 32px, 1120px);
+			margin: 0 auto;
+		}
+		.header-inner {
+			min-height: 68px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 20px;
+		}
+		.brand {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			color: var(--ink);
+			font-size: 19px;
+			font-weight: 800;
+			text-decoration: none;
+		}
+		.brand-logo {
+			width: 48px;
+			height: 48px;
+			object-fit: contain;
+		}
+		.header-links {
+			display: flex;
+			align-items: center;
+			gap: 18px;
+		}
+		.header-links a {
+			color: #2457d6;
+			font-size: 14px;
+			font-weight: 700;
+			text-decoration: none;
+		}
+		.page-shell {
+			padding: 38px 0 56px;
+		}
+		.page-heading {
+			margin-bottom: 22px;
+		}
+		.page-heading h1 {
+			margin: 0 0 8px;
+			font-size: 32px;
+			font-weight: 800;
+		}
+		.page-heading p {
+			margin: 0;
+			color: var(--muted);
+		}
+		.saved-job-filters {
+			display: grid;
+			grid-template-columns: minmax(190px, 1fr) minmax(160px, 0.65fr) repeat(2, minmax(145px, 0.6fr)) auto;
+			align-items: end;
+			gap: 12px;
+			margin-bottom: 20px;
+			padding: 18px;
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 12px;
+		}
+		.saved-job-filter-actions {
+			display: flex;
+			gap: 8px;
+		}
+		.saved-job-results-count {
+			margin: 0 0 14px;
+			color: var(--muted);
+			font-size: 13px;
+		}
+		.saved-job-list {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+			gap: 18px;
+		}
+		.saved-job,
+		.empty-state {
+			padding: 20px;
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 12px;
+		}
+		.saved-job {
+			display: flex;
+			flex-direction: column;
+		}
+		.saved-job-topline,
+		.saved-job-actions,
+		.status-controls {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+		}
+		.saved-job h2 {
+			margin: 0 0 5px;
+			font-size: 19px;
+			font-weight: 750;
+		}
+		.saved-job-company-heading {
+			display: flex;
+			min-width: 0;
+			align-items: center;
+			gap: 12px;
+		}
+		.saved-job-logo {
+			position: relative;
+			display: grid;
+			width: 48px;
+			height: 48px;
+			flex: 0 0 48px;
+			place-items: center;
+			overflow: hidden;
+			color: #2457d6;
+			background: #edf3ff;
+			border: 1px solid #e1e8f4;
+			border-radius: 12px;
+			font-size: 18px;
+			font-weight: 800;
+			text-transform: uppercase;
+		}
+		.saved-job-logo img {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			padding: 4px;
+			background: #fff;
+			object-fit: contain;
+		}
+		.saved-job-company-copy {
+			min-width: 0;
+		}
+		.saved-job-company,
+		.saved-job-details {
+			color: var(--muted);
+			font-size: 14px;
+		}
+		.saved-job-details {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px 18px;
+			margin-top: 14px;
+		}
+		.status-badge {
+			flex: 0 0 auto;
+			padding: 6px 10px;
+			color: #2457a5;
+			background: #e8f0ff;
+			border-radius: 999px;
+			font-size: 12px;
+			font-weight: 750;
+		}
+		.status-controls {
+			justify-content: flex-start;
+			flex-wrap: wrap;
+			margin-top: 16px;
+		}
+		.status-controls .form-select {
+			flex: 1 1 160px;
+			max-width: 100%;
+		}
+		.saved-job-actions {
+			flex-wrap: wrap;
+			justify-content: flex-start;
+			margin-top: 16px;
+		}
+		.empty-state {
+			padding: 40px 20px;
+			color: var(--muted);
+			text-align: center;
+		}
+		@media (max-width: 600px) {
+			.header-inner,
+			.page-shell {
+				width: calc(100% - 32px);
+			}
+			.page-shell {
+				padding-top: 28px;
+			}
+			.saved-job-list {
+				grid-template-columns: 1fr;
+			}
+			.saved-job-filters {
+				grid-template-columns: 1fr;
+			}
+			.saved-job-topline,
+			.status-controls {
+				align-items: flex-start;
+				flex-direction: column;
+			}
+			.status-controls .form-select {
+				max-width: 100%;
+				width: 100%;
+			}
+		}
+	</style>
+</head>
+<body>
+	<header class="site-header">
+		<div class="header-inner">
+			<a href="{{ url_for('jobs') }}" class="brand">
+				<img src="{{ url_for('template_logo') }}" alt="" class="brand-logo">
+				<span>Job Portal</span>
+			</a>
+			<div class="header-account">{% include "_header_profile.html" %}</div>
+		</div>
+	</header>
+	<main class="page-shell">
+		{% include "_flash_toasts.html" %}
+		<section class="page-heading">
+			<h1>Saved Jobs</h1>
+			<p>Review saved roles, filter by title or month, and update application status.</p>
+		</section>
+		{% if total_saved_job_count %}
+			<form class="saved-job-filters" method="GET" action="{{ url_for('saved_jobs') }}" aria-label="Filter saved jobs">
+				<div>
+					<label class="form-label" for="saved-job-title">Job title</label>
+					<input class="form-control" id="saved-job-title" name="job_title" type="search" maxlength="200" placeholder="Search job title" value="{{ filters.job_title }}">
+				</div>
+				<div>
+					<label class="form-label" for="saved-job-month">Saved month</label>
+					<select class="form-select" id="saved-job-month" name="month">
+						<option value="">All months</option>
+						{% for month_value, month_label in saved_months %}
+							<option value="{{ month_value }}" {% if filters.month == month_value %}selected{% endif %}>{{ month_label }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div>
+					<label class="form-label" for="saved-job-start-date">From date</label>
+					<input class="form-control" id="saved-job-start-date" name="start_date" type="date" value="{{ filters.start_date }}">
+				</div>
+				<div>
+					<label class="form-label" for="saved-job-end-date">To date</label>
+					<input class="form-control" id="saved-job-end-date" name="end_date" type="date" value="{{ filters.end_date }}">
+				</div>
+				<div class="saved-job-filter-actions">
+					<button class="btn btn-primary" type="submit">Filter</button>
+					<a class="btn btn-outline-secondary" href="{{ url_for('saved_jobs') }}">Clear</a>
+				</div>
+			</form>
+			<p class="saved-job-results-count">Showing {{ saved_jobs|length }} of {{ total_saved_job_count }} saved job{% if total_saved_job_count != 1 %}s{% endif %}.</p>
+		{% endif %}
+		{% if saved_jobs %}
+			<div class="saved-job-list">
+				{% for job in saved_jobs %}
+					<article class="saved-job">
+						<div class="saved-job-topline">
+							<div class="saved-job-company-heading">
+								<span class="saved-job-logo" aria-hidden="true">
+									{{ job.company|first|upper }}
+									{% set logo_url = company_logo_urls.get(job.id, job.company_logo_url) %}
+									{% if logo_url %}
+										<img src="{{ logo_url }}" alt="" loading="lazy">
+									{% endif %}
+								</span>
+								<div class="saved-job-company-copy">
+									<h2>{{ job.job_title }}</h2>
+									<div class="saved-job-company">{{ job.company }} · {{ "Himalayas" if job.source_type == "himalayas" else "Job Portal" }}</div>
+								</div>
+							</div>
+							<span class="status-badge">{{ job.tracking_status|replace("_", " ")|title }}</span>
+						</div>
+						<div class="saved-job-details">
+							{% if job.location %}<span>{{ job.location }}</span>{% endif %}
+							{% if job.employment_type %}<span>{{ job.employment_type }}</span>{% endif %}
+							{% if job.salary %}<span>{{ job.salary }}</span>{% endif %}
+							<span>Saved {{ job.saved_at.strftime("%b %d, %Y") }}</span>
+						</div>
+						{% if job.source_type == "himalayas" %}
+							<form class="status-controls" method="POST" action="{{ url_for('update_saved_job_status', saved_job_id=job.id) }}">
+								<input type="hidden" name="_csrf_token" value="{{ application_csrf_token }}">
+								<label class="visually-hidden" for="status-{{ job.id }}">Application status for {{ job.job_title }}</label>
+								<select class="form-select" id="status-{{ job.id }}" name="status">
+									<option value="saved" {% if job.tracking_status == "saved" %}selected{% endif %}>Saved</option>
+									<option value="applied" {% if job.tracking_status == "applied" %}selected{% endif %}>Applied</option>
+									<option value="interviewing" {% if job.tracking_status == "interviewing" %}selected{% endif %}>Interviewing</option>
+									<option value="offer" {% if job.tracking_status == "offer" %}selected{% endif %}>Offer</option>
+									<option value="rejected" {% if job.tracking_status == "rejected" %}selected{% endif %}>Rejected</option>
+								</select>
+								<button class="btn btn-outline-primary" type="submit">Update status</button>
+							</form>
+						{% endif %}
+						<div class="saved-job-actions">
+							{% if job.source_type == "himalayas" %}
+								<a class="btn btn-primary" href="{{ job.application_url }}" target="_blank" rel="noopener noreferrer">Open application link</a>
+							{% elif job.portal_job_id %}
+								<a class="btn btn-primary" href="{{ url_for('apply_portal_job', job_id=job.portal_job_id) }}">Apply on Job Portal</a>
+							{% endif %}
+							<form method="POST" action="{{ url_for('remove_saved_job', saved_job_id=job.id) }}">
+								<input type="hidden" name="_csrf_token" value="{{ application_csrf_token }}">
+								<button class="btn btn-outline-secondary" type="submit">Remove</button>
+							</form>
+						</div>
+					</article>
+				{% endfor %}
+			</div>
+		{% elif total_saved_job_count %}
+			<div class="empty-state">
+				<h2 class="h5 fw-bold">No matching saved jobs</h2>
+				<p>Try another job title or month.</p>
+				<a class="btn btn-outline-primary" href="{{ url_for('saved_jobs') }}">Clear filters</a>
+			</div>
+		{% else %}
+			<div class="empty-state">
+				<h2 class="h5 fw-bold">No saved jobs yet</h2>
+				<p>Save a listing to keep it here and track external applications.</p>
+				<a class="btn btn-primary" href="{{ url_for('jobs') }}">Browse jobs</a>
+			</div>
+		{% endif %}
+	</main>
+	<script>
+		document.querySelectorAll(".saved-job-logo img").forEach((logo) => {
+			logo.addEventListener("error", () => logo.remove(), {once: true});
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+{% with messages = get_flashed_messages(with_categories=true) %}
+	{% set all_messages = messages + (extra_toast_messages|default([], true)) %}
+	<style>
+		.flash-toast-container {
+			position: fixed;
+			z-index: 1200;
+			top: 16px;
+			right: 16px;
+			display: grid;
+			gap: 10px;
+			width: min(420px, calc(100vw - 32px));
+			pointer-events: none;
+		}
+		.flash-toast {
+			display: flex;
+			align-items: flex-start;
+			justify-content: space-between;
+			gap: 16px;
+			padding: 14px 16px;
+			color: #17243b;
+			background: #fff;
+			border: 1px solid #e4e9f1;
+			border-left: 4px solid #66738a;
+			border-radius: 10px;
+			box-shadow: 0 8px 26px rgba(27, 45, 80, 0.16);
+			opacity: 1;
+			transform: translateY(0);
+			transition: opacity 250ms ease, transform 250ms ease;
+			pointer-events: auto;
+		}
+		.flash-toast--success { border-left-color: #198754; }
+		.flash-toast--danger { border-left-color: #dc3545; }
+		.flash-toast--warning { border-left-color: #d99700; }
+		.flash-toast--info { border-left-color: #0d6efd; }
+		.flash-toast.is-hiding {
+			opacity: 0;
+			transform: translateY(-8px);
+		}
+		.flash-toast-message {
+			font-size: 14px;
+			font-weight: 600;
+			line-height: 1.45;
+		}
+		.flash-toast-close {
+			padding: 0;
+			color: #66738a;
+			background: transparent;
+			border: 0;
+			font-size: 21px;
+			line-height: 1;
+			cursor: pointer;
+		}
+		@media (max-width: 600px) {
+			.flash-toast-container {
+				top: 10px;
+				right: 10px;
+				width: calc(100vw - 20px);
+			}
+		}
+	</style>
+	<div class="flash-toast-container" aria-live="polite" aria-atomic="false">
+		{% for category, message in all_messages %}
+			{% set toast_category = "danger" if category == "error" else category %}
+			<div class="flash-toast flash-toast--{{ toast_category }}" role="status">
+				<div class="flash-toast-message">{{ message }}</div>
+				<button class="flash-toast-close" type="button" aria-label="Dismiss notification">&times;</button>
+			</div>
+		{% endfor %}
+	</div>
+	<script>
+		const toastContainer = document.querySelector(".flash-toast-container");
+		const initializeToast = (toast) => {
+			let dismissTimer;
+			const dismiss = () => {
+				window.clearTimeout(dismissTimer);
+				toast.classList.add("is-hiding");
+				window.setTimeout(() => toast.remove(), 260);
+			};
+			toast.querySelector(".flash-toast-close").addEventListener("click", dismiss);
+			dismissTimer = window.setTimeout(dismiss, 3500);
+		};
+
+		window.showFlashToast = (message, category = "info") => {
+			const allowedCategories = ["success", "danger", "warning", "info"];
+			const toastCategory = allowedCategories.includes(category) ? category : "info";
+			const toast = document.createElement("div");
+			toast.className = `flash-toast flash-toast--${toastCategory}`;
+			toast.setAttribute("role", "status");
+
+			const messageElement = document.createElement("div");
+			messageElement.className = "flash-toast-message";
+			messageElement.textContent = message;
+
+			const closeButton = document.createElement("button");
+			closeButton.className = "flash-toast-close";
+			closeButton.type = "button";
+			closeButton.setAttribute("aria-label", "Dismiss notification");
+			closeButton.textContent = "\u00d7";
+
+			toast.append(messageElement, closeButton);
+			toastContainer.append(toast);
+			initializeToast(toast);
+		};
+
+		toastContainer.querySelectorAll(".flash-toast").forEach(initializeToast);
+	</script>
+{% endwith %}

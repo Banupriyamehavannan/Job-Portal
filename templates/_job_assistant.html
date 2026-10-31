@@ -1,0 +1,30 @@
+<script id="job-assistant-listings" type="application/json">{{ assistant_jobs|default([], true)|tojson }}</script>
+<aside class="job-assistant" data-endpoint="{{ url_for('job_assistant') }}" data-csrf-token="{{ csrf_token }}" aria-label="AI job search assistant">
+	<section class="assistant-panel" id="job-assistant-panel" role="dialog" aria-labelledby="job-assistant-title" hidden>
+		<div class="assistant-header">
+			<h2 id="job-assistant-title">AI Job Assistant</h2>
+			<button class="assistant-close" id="job-assistant-close" type="button" aria-label="Close chat">&times;</button>
+		</div>
+		<div class="assistant-messages" id="job-assistant-messages" role="log" aria-live="polite">
+			<div class="assistant-message assistant-message-bot">
+				{% if job_assistant_enabled %}
+					Hello! Tell me about your experience, skills, or the type of role you’re looking for. I can also help you navigate Job Portal.
+				{% else %}
+					The AI assistant is not configured yet. Add GEMINI_API_KEY to your .env file and restart Flask to enable it.
+				{% endif %}
+			</div>
+		</div>
+		{% if job_assistant_enabled %}
+			<form class="assistant-form" id="job-assistant-form">
+				<label class="visually-hidden" for="job-assistant-input">Ask the AI job assistant</label>
+				<input id="job-assistant-input" name="message" maxlength="500" autocomplete="off" placeholder="Describe your skills, experience, or ask about Job Portal..." required>
+				<button type="submit">Send</button>
+			</form>
+			<p class="assistant-note">Your message and, on the jobs page, current job listing details are sent to Google Gemini. Please do not share sensitive personal information.</p>
+		{% endif %}
+	</section>
+	<button class="assistant-toggle" id="job-assistant-toggle" type="button" aria-expanded="false" aria-controls="job-assistant-panel">
+		Ask AI
+	</button>
+</aside>
+<script src="{{ url_for('static', filename='js/job_assistant.js') }}" defer></script>

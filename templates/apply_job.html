@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Apply for this job through Job Portal.">
+	<title>Apply for {{ job.title }} | Job Portal</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/job_assistant.css') }}">
+	<style>
+		:root {
+			--ink: #17243b;
+			--muted: #66738a;
+			--brand: #2457d6;
+			--line: #e4e9f1;
+		}
+		body {
+			min-height: 100vh;
+			color: var(--ink);
+			background: #f3f6fb;
+			font-family: Inter, "Segoe UI", Arial, sans-serif;
+		}
+		.site-header {
+			background: #fff;
+			border-bottom: 1px solid var(--line);
+		}
+		.header-inner,
+		.page-shell {
+			width: min(100% - 48px, 1000px);
+			margin: 0 auto;
+		}
+		.header-inner {
+			min-height: 68px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 20px;
+		}
+		.brand {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			color: var(--ink);
+			font-size: 19px;
+			font-weight: 800;
+			text-decoration: none;
+		}
+		.brand-logo {
+			width: 48px;
+			height: 48px;
+			object-fit: contain;
+		}
+		.profile-icon {
+			width: 36px;
+			height: 36px;
+			flex: 0 0 36px;
+			display: inline-grid;
+			place-items: center;
+			overflow: hidden;
+			border-radius: 50%;
+			color: #fff;
+			background: var(--brand);
+			font-size: 14px;
+			font-weight: 800;
+			object-fit: cover;
+		}
+		.back-link {
+			color: var(--brand);
+			font-size: 14px;
+			font-weight: 700;
+			text-decoration: none;
+		}
+		.page-shell {
+			max-width: 760px;
+			padding: 42px 0 56px;
+		}
+		.page-heading {
+			margin-bottom: 22px;
+		}
+		.page-heading h1 {
+			margin: 0 0 8px;
+			font-size: clamp(26px, 4vw, 34px);
+			font-weight: 800;
+		}
+		.page-heading p {
+			margin: 0;
+			color: var(--muted);
+		}
+		.job-summary,
+		.application-panel {
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 12px;
+			box-shadow: 0 5px 18px rgba(27, 45, 80, 0.045);
+		}
+		.job-summary {
+			margin-bottom: 18px;
+			padding: 20px 22px;
+		}
+		.job-summary h2 {
+			margin: 0 0 5px;
+			font-size: 19px;
+			font-weight: 750;
+			overflow-wrap: anywhere;
+		}
+		.job-summary p {
+			margin: 0;
+			color: var(--muted);
+		}
+		.application-panel {
+			padding: 26px;
+		}
+		.application-panel h2 {
+			margin-bottom: 20px;
+			font-size: 19px;
+			font-weight: 750;
+		}
+		.form-label {
+			color: #46536a;
+			font-size: 13px;
+			font-weight: 700;
+		}
+		.form-control {
+			min-height: 44px;
+			border-color: #dce3ed;
+			border-radius: 8px;
+		}
+		textarea.form-control {
+			min-height: 130px;
+		}
+		.form-control:focus {
+			border-color: #9bb5ee;
+			box-shadow: 0 0 0 3px rgba(36, 87, 214, 0.12);
+		}
+		.form-text {
+			color: var(--muted);
+		}
+		.btn-primary {
+			min-height: 44px;
+			padding: 10px 20px;
+			background: var(--brand);
+			border-color: var(--brand);
+			border-radius: 8px;
+			font-weight: 700;
+		}
+		.privacy-note {
+			margin: 0;
+			color: var(--muted);
+			font-size: 12px;
+			line-height: 1.5;
+		}
+		@media (max-width: 600px) {
+			.header-inner,
+			.page-shell {
+				width: calc(100% - 32px);
+			}
+			.page-shell {
+				padding-top: 30px;
+			}
+			.application-panel {
+				padding: 20px;
+			}
+		}
+	</style>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/portal_ui.css') }}">
+</head>
+<body>
+	<header class="site-header">
+		<div class="header-inner">
+			<a href="{{ url_for('jobs') }}" class="brand">
+				<img src="{{ url_for('template_logo') }}" alt="" class="brand-logo">
+				<span>Job Portal</span>
+			</a>
+			<div class="header-account">{% include "_header_profile.html" %}</div>
+		</div>
+	</header>
+
+	<main class="page-shell page-shell--form">
+		{% set extra_toast_messages = [("info", "You have already submitted an application for this job.")] if already_applied else [] %}
+		{% include "_flash_toasts.html" %}
+
+		<div class="page-heading">
+			<h1>Apply on Job Portal</h1>
+			<p>Your application will be submitted to Job Portal, not to Himalayas.</p>
+		</div>
+
+		<section class="job-summary" aria-label="Job details">
+			<h2>{{ job.title }}</h2>
+			<p>{{ job.company }}</p>
+		</section>
+		{% if portal_application %}
+			<div class="alert alert-info" role="status">Your application will be saved to Job Portal, emailed to the employer, and shown in the employer's candidate applications page.</div>
+		{% endif %}
+
+		{% if already_applied %}
+			<div class="application-panel">
+				<a class="btn btn-primary" href="{{ url_for('jobs') }}">Continue searching</a>
+			</div>
+		{% else %}
+			<section class="application-panel" aria-labelledby="application-form-heading">
+				<h2 id="application-form-heading">Your application</h2>
+				<form method="POST" enctype="multipart/form-data">
+					<input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+					<div class="row g-3">
+						<div class="col-md-6">
+							<label class="form-label" for="name">Full name <span class="text-danger">*</span></label>
+							<input class="form-control" id="name" name="name" type="text" required maxlength="100" autocomplete="name" value="{{ form_data.name }}">
+						</div>
+						<div class="col-md-6">
+							<label class="form-label" for="email">Email address <span class="text-danger">*</span></label>
+							<input class="form-control" id="email" name="email" type="email" required maxlength="120" autocomplete="email" value="{{ form_data.email }}">
+						</div>
+						<div class="col-12">
+							<label class="form-label" for="phone">Phone number <span class="text-danger">*</span></label>
+							<input class="form-control" id="phone" name="phone" type="tel" required maxlength="40" autocomplete="tel" value="{{ form_data.phone }}">
+						</div>
+						<div class="col-12">
+							<label class="form-label" for="resume">Resume <span class="text-danger">*</span></label>
+							{% if has_existing_resume %}
+								<fieldset class="mb-2">
+									<legend class="form-label mb-2">Do you want to edit your resume?</legend>
+									<div class="form-check">
+										<input class="form-check-input" id="use-existing-resume" name="resume_choice" type="radio" value="existing" {% if resume_choice == "existing" %}checked{% endif %}>
+										<label class="form-check-label" for="use-existing-resume">Use existing resume: {{ existing_resume_name }}</label>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" id="upload-new-resume" name="resume_choice" type="radio" value="new" {% if resume_choice == "new" %}checked{% endif %}>
+										<label class="form-check-label" for="upload-new-resume">Upload a new resume</label>
+									</div>
+								</fieldset>
+							{% else %}
+								<input type="hidden" name="resume_choice" value="new">
+							{% endif %}
+							<input class="form-control" id="resume" name="resume" type="file" {% if not has_existing_resume or resume_choice == "new" %}required{% endif %} accept=".pdf,.doc,.docx">
+							<div class="form-text">PDF, DOC, or DOCX; maximum 8 MB.</div>
+						</div>
+						<div class="col-12">
+							<label class="form-label" for="cover_letter">Cover letter</label>
+							<textarea class="form-control" id="cover_letter" name="cover_letter" maxlength="5000" placeholder="Tell us why you are a good fit for this role.">{{ form_data.cover_letter }}</textarea>
+							<div class="form-text">Optional; up to 5,000 characters.</div>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label" for="profile_image">Profile image</label>
+							<input class="form-control" id="profile_image" name="profile_image" type="file" accept=".jpg,.jpeg,.png,.webp">
+							<div class="form-text">Optional; JPG, PNG, or WebP, maximum 8 MB.</div>
+							{% if current_user.profile_image_filename %}
+								<div class="form-text mt-2">Current profile image:</div>
+								<img class="profile-icon mt-1" src="{{ url_for('application_upload', filename=current_user.profile_image_filename) }}" alt="Current profile image" width="56" height="56">
+								<div class="form-text">Leave this blank to keep your current profile image.</div>
+							{% endif %}
+						</div>
+						<div class="col-md-6">
+							<label class="form-label" for="cover_image">Cover image</label>
+							<input class="form-control" id="cover_image" name="cover_image" type="file" accept=".jpg,.jpeg,.png,.webp">
+							<div class="form-text">Optional; JPG, PNG, or WebP, maximum 8 MB.</div>
+							{% if current_user.cover_image_filename %}
+								<div class="form-text mt-2">Current cover image:</div>
+								<img id="cover-image-preview" class="img-fluid rounded mt-1" src="{{ url_for('application_upload', filename=current_user.cover_image_filename) }}" alt="Current cover image" style="max-height: 120px;">
+								<div class="form-text">Leave this blank to keep your current cover image.</div>
+							{% endif %}
+						</div>
+					</div>
+					<div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 mt-4">
+						<p class="privacy-note">
+							Your contact details and uploaded files are saved with this application and your account for reuse.
+							{% if portal_application %}
+								The employer receives your application and resume by email and can review your application in Job Portal.
+							{% else %}
+								If admin email is configured, the application and attachments are emailed to the portal admin.
+							{% endif %}
+						</p>
+						<button class="btn btn-primary flex-shrink-0" type="submit">Submit application</button>
+					</div>
+				</form>
+			</section>
+		{% endif %}
+	</main>
+	<script>
+		const resumeInput = document.getElementById("resume");
+		if (resumeInput) {
+			const resumeChoiceInputs = document.querySelectorAll('input[name="resume_choice"][type="radio"]');
+			const profileImageInput = document.getElementById("profile_image");
+			const coverImageInput = document.getElementById("cover_image");
+
+			function updateResumeInput() {
+				const selectedResumeChoice = document.querySelector('input[name="resume_choice"]:checked');
+				resumeInput.required = !selectedResumeChoice || selectedResumeChoice.value === "new";
+				resumeInput.disabled = Boolean(selectedResumeChoice && selectedResumeChoice.value === "existing");
+			}
+
+			resumeChoiceInputs.forEach((input) => input.addEventListener("change", updateResumeInput));
+			updateResumeInput();
+
+			profileImageInput.addEventListener("change", () => {
+				const file = profileImageInput.files[0];
+				if (!file) return;
+				const reader = new FileReader();
+				reader.addEventListener("load", () => {
+					const avatar = document.getElementById("profile-avatar");
+					const preview = document.createElement("img");
+					preview.className = "profile-icon";
+					preview.id = "profile-avatar";
+					preview.alt = "Selected profile image preview";
+					preview.src = reader.result;
+					avatar.replaceWith(preview);
+				});
+				reader.readAsDataURL(file);
+			});
+
+			coverImageInput.addEventListener("change", () => {
+				const file = coverImageInput.files[0];
+				if (!file) return;
+				const reader = new FileReader();
+				reader.addEventListener("load", () => {
+					let preview = document.getElementById("cover-image-preview");
+					if (!preview) {
+						preview = document.createElement("img");
+						preview.id = "cover-image-preview";
+						preview.className = "img-fluid rounded mt-2";
+						preview.alt = "Selected cover image preview";
+						preview.style.maxHeight = "120px";
+						coverImageInput.after(preview);
+					}
+					preview.src = reader.result;
+				});
+				reader.readAsDataURL(file);
+			});
+		}
+	</script>
+	{% include "_job_assistant.html" %}
+</body>
+</html>

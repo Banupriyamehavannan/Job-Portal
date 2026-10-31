@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Create and publish an employer job listing.">
+	<title>Post a Job | Job Portal</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/job_assistant.css') }}">
+	<style>
+		:root {
+			--ink: #17243b;
+			--muted: #66738a;
+			--brand: #2457d6;
+			--line: #e4e9f1;
+		}
+		body {
+			min-height: 100vh;
+			color: var(--ink);
+			background: #f3f6fb;
+			font-family: Inter, "Segoe UI", Arial, sans-serif;
+		}
+		.site-header {
+			background: #fff;
+			border-bottom: 1px solid var(--line);
+		}
+		.header-inner,
+		.page-shell {
+			width: min(100% - 48px, 1000px);
+			margin: 0 auto;
+		}
+		.header-inner {
+			min-height: 68px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 20px;
+		}
+		.brand {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			color: var(--ink);
+			font-size: 19px;
+			font-weight: 800;
+			text-decoration: none;
+		}
+		.brand-logo {
+			width: 48px;
+			height: 48px;
+			object-fit: contain;
+		}
+		.header-actions {
+			display: flex;
+			align-items: center;
+			gap: 18px;
+		}
+		.profile-menu {
+			position: relative;
+		}
+		.profile-menu summary {
+			display: flex;
+			cursor: pointer;
+			list-style: none;
+		}
+		.profile-menu summary::-webkit-details-marker {
+			display: none;
+		}
+		.profile-icon {
+			width: 36px;
+			height: 36px;
+			flex: 0 0 36px;
+			display: inline-grid;
+			place-items: center;
+			overflow: hidden;
+			border-radius: 50%;
+			color: #fff;
+			background: var(--brand);
+			font-size: 14px;
+			font-weight: 800;
+			object-fit: cover;
+		}
+		.profile-menu-content {
+			position: absolute;
+			z-index: 20;
+			top: calc(100% + 10px);
+			right: 0;
+			min-width: 210px;
+			padding: 7px;
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 10px;
+			box-shadow: 0 10px 28px rgba(27, 45, 80, 0.14);
+		}
+		.profile-menu-content a {
+			display: block;
+			padding: 10px 11px;
+			border-radius: 7px;
+			color: var(--ink);
+			font-size: 14px;
+			font-weight: 650;
+			text-decoration: none;
+		}
+		.profile-menu-content a:hover {
+			background: #f3f6fb;
+		}
+		.back-link {
+			color: var(--brand);
+			font-size: 14px;
+			font-weight: 700;
+			text-decoration: none;
+		}
+		.page-shell {
+			max-width: 860px;
+			padding: 38px 0 56px;
+		}
+		.page-heading {
+			margin-bottom: 22px;
+		}
+		.page-heading h1 {
+			margin: 0 0 8px;
+			font-size: clamp(26px, 4vw, 34px);
+			font-weight: 800;
+		}
+		.page-heading p {
+			margin: 0;
+			color: var(--muted);
+		}
+		.form-panel,
+		.posted-panel {
+			margin-bottom: 22px;
+			padding: 26px;
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 12px;
+			box-shadow: 0 5px 18px rgba(27, 45, 80, 0.045);
+		}
+		.company-profile {
+			margin-bottom: 22px;
+			padding: 22px 26px;
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 12px;
+			box-shadow: 0 5px 18px rgba(27, 45, 80, 0.045);
+		}
+		.company-profile summary {
+			color: var(--ink);
+			font-size: 19px;
+			font-weight: 750;
+			cursor: pointer;
+		}
+		.company-profile summary span {
+			display: block;
+			margin-top: 5px;
+			color: var(--muted);
+			font-size: 13px;
+			font-weight: 400;
+		}
+		.company-image-preview {
+			max-width: 100%;
+			max-height: 100px;
+			margin-top: 8px;
+			border: 1px solid var(--line);
+			border-radius: 8px;
+			object-fit: contain;
+		}
+		.form-panel h2,
+		.posted-panel h2 {
+			margin: 0 0 20px;
+			font-size: 19px;
+			font-weight: 750;
+		}
+		.form-label {
+			color: #46536a;
+			font-size: 13px;
+			font-weight: 700;
+		}
+		.form-control,
+		.form-select {
+			min-height: 44px;
+			border-color: #dce3ed;
+			border-radius: 8px;
+		}
+		textarea.form-control {
+			min-height: 120px;
+		}
+		#description {
+			min-height: 220px;
+		}
+		.form-control:focus,
+		.form-select:focus {
+			border-color: #9bb5ee;
+			box-shadow: 0 0 0 3px rgba(36, 87, 214, 0.12);
+		}
+		.btn-primary {
+			min-height: 44px;
+			padding: 10px 18px;
+			background: var(--brand);
+			border-color: var(--brand);
+			border-radius: 8px;
+			font-weight: 700;
+		}
+		.ai-button {
+			min-height: 38px;
+			color: var(--brand);
+			background: #edf3ff;
+			border: 1px solid #d5e1fb;
+			border-radius: 8px;
+			font-size: 13px;
+			font-weight: 700;
+		}
+		.ai-button:disabled {
+			opacity: 0.65;
+		}
+		.form-text {
+			color: var(--muted);
+		}
+		.posted-job {
+			padding: 14px 0;
+			border-top: 1px solid var(--line);
+		}
+		.posted-job:first-of-type {
+			padding-top: 0;
+			border-top: 0;
+		}
+		.posted-job h3 {
+			margin: 0 0 4px;
+			font-size: 16px;
+			font-weight: 750;
+		}
+		.posted-job p {
+			margin: 0;
+			color: var(--muted);
+			font-size: 13px;
+		}
+		@media (max-width: 600px) {
+			.header-inner,
+			.page-shell {
+				width: calc(100% - 32px);
+			}
+			.page-shell {
+				padding-top: 28px;
+			}
+			.form-panel,
+			.posted-panel,
+			.company-profile {
+				padding: 20px;
+			}
+		}
+	</style>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/portal_ui.css') }}">
+</head>
+<body>
+	<header class="site-header">
+		<div class="header-inner">
+			<a href="{{ url_for('home') }}" class="brand">
+				<img src="{{ url_for('template_logo') }}" alt="" class="brand-logo">
+				<span>Job Portal</span>
+			</a>
+			<div class="header-account">{% include "_header_profile.html" %}</div>
+		</div>
+	</header>
+
+	<main class="page-shell page-shell--form">
+		{% include "_flash_toasts.html" %}
+		<div class="page-heading">
+			<h1>Hire your next great candidate</h1>
+			<p>Set up your company profile, then share your roles and connect with great candidates.</p>
+		</div>
+
+		<details class="company-profile" {% if not profile_complete or (request.method == "POST" and request.form.get("action") == "save_company_profile") %}open{% endif %}>
+			<summary>
+				Company profile
+				<span>
+					{% if profile_complete %}
+						{{ company_profile.company_name }} · {{ company_profile.company_location }}
+					{% else %}
+						Add your company details, logo, and photo before posting a job.
+					{% endif %}
+				</span>
+			</summary>
+			<form class="mt-4" method="POST" action="{{ url_for('post_job') }}" enctype="multipart/form-data">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+				<input type="hidden" name="action" value="save_company_profile">
+				<div class="row g-3">
+					<div class="col-md-6">
+						<label class="form-label" for="company_name">Company name *</label>
+						<input class="form-control" id="company_name" name="company_name" maxlength="150" required value="{{ company_profile.company_name }}">
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="company_position">Your position *</label>
+						<input class="form-control" id="company_position" name="company_position" maxlength="120" required placeholder="e.g. Founder, HR Manager, Recruiter" value="{{ company_profile.company_position }}">
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="company_location">Company location *</label>
+						<input class="form-control" id="company_location" name="company_location" maxlength="120" required placeholder="e.g. Chennai, India" value="{{ company_profile.company_location }}">
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="company_employee_count">Number of employees *</label>
+						<select class="form-select" id="company_employee_count" name="company_employee_count" required>
+							<option value="">Choose employee count</option>
+							{% for option in employee_count_options %}
+								<option value="{{ option }}" {% if company_profile.company_employee_count == option %}selected{% endif %}>{{ option }} employees</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="company_industry">Company type / industry *</label>
+						<input class="form-control" id="company_industry" name="company_industry" maxlength="120" required placeholder="e.g. Software, Healthcare, Education" value="{{ company_profile.company_industry }}">
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="company_logo">Company logo {% if not current_user.company_logo_filename %}*{% endif %}</label>
+						<input class="form-control" id="company_logo" name="company_logo" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" {% if not current_user.company_logo_filename %}required{% endif %}>
+						<div class="form-text">JPG, PNG, or WebP; maximum 8 MB.</div>
+						{% if current_user.company_logo_filename %}
+							<a href="{{ url_for('application_upload', filename=current_user.company_logo_filename) }}" target="_blank" rel="noopener">View current logo</a>
+							<br><img class="company-image-preview" src="{{ url_for('application_upload', filename=current_user.company_logo_filename) }}" alt="Current company logo">
+						{% endif %}
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="company_photo">Company photo {% if not current_user.company_photo_filename %}*{% endif %}</label>
+						<input class="form-control" id="company_photo" name="company_photo" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" {% if not current_user.company_photo_filename %}required{% endif %}>
+						<div class="form-text">JPG, PNG, or WebP; maximum 8 MB.</div>
+						{% if current_user.company_photo_filename %}
+							<a href="{{ url_for('application_upload', filename=current_user.company_photo_filename) }}" target="_blank" rel="noopener">View current company photo</a>
+							<br><img class="company-image-preview" src="{{ url_for('application_upload', filename=current_user.company_photo_filename) }}" alt="Current company photo">
+						{% endif %}
+					</div>
+				</div>
+				<div class="d-flex justify-content-end mt-4">
+					<button class="btn btn-primary" type="submit">Save company profile</button>
+				</div>
+			</form>
+		</details>
+
+		{% if profile_complete %}
+		<section class="form-panel" aria-labelledby="job-form-title">
+			<h2 id="job-form-title">Post a job</h2>
+			<form method="POST" action="{{ url_for('post_job') }}">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+				<div class="row g-3">
+					<div class="col-md-6">
+						<label class="form-label" for="title">Job title *</label>
+						<input class="form-control" id="title" name="title" maxlength="200" required value="{{ form_data.title }}">
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="company">Company name *</label>
+						<input class="form-control" id="company" maxlength="150" readonly value="{{ form_data.company }}">
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="location">Location / remote policy *</label>
+						<input class="form-control" id="location" name="location" maxlength="120" placeholder="e.g. Remote — India" required value="{{ form_data.location }}">
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="employment_type">Employment type *</label>
+						<select class="form-select" id="employment_type" name="employment_type" required>
+							<option value="">Choose employment type</option>
+							{% for option in ["Full-time", "Part-time", "Contract", "Internship", "Temporary"] %}
+								<option value="{{ option }}" {% if form_data.employment_type == option %}selected{% endif %}>{{ option }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="experience_level">Experience level *</label>
+						<input class="form-control" id="experience_level" name="experience_level" maxlength="80" placeholder="e.g. 3+ years, Mid-level" required value="{{ form_data.experience_level }}">
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="salary_range">Salary range</label>
+						<input class="form-control" id="salary_range" name="salary_range" maxlength="100" placeholder="e.g. ₹8–12 LPA" value="{{ form_data.salary_range }}">
+					</div>
+					<div class="col-12">
+						<label class="form-label" for="skills">Key skills *</label>
+						<input class="form-control" id="skills" name="skills" maxlength="1000" placeholder="e.g. Python, Flask, PostgreSQL" required value="{{ form_data.skills }}">
+					</div>
+					<div class="col-12">
+						<label class="form-label" for="requirements">Responsibilities and requirements *</label>
+						<textarea class="form-control" id="requirements" name="requirements" maxlength="3000" required placeholder="List the main responsibilities, required qualifications, and any preferred experience.">{{ form_data.requirements }}</textarea>
+						<div class="form-text">The AI draft will use these details and will not invent missing information.</div>
+					</div>
+					<div class="col-12">
+						<div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+							<label class="form-label mb-0" for="description">Job description *</label>
+							<button class="ai-button px-3" id="generate-description" type="button" {% if not job_assistant_enabled %}disabled title="Configure GEMINI_API_KEY to enable AI"{% endif %}>Use AI to write description</button>
+						</div>
+						<textarea class="form-control mt-2" id="description" name="description" maxlength="5000" required placeholder="Write the job description or use AI to generate a draft.">{{ form_data.description }}</textarea>
+						<div class="form-text" id="description-status" aria-live="polite">
+							{% if not job_assistant_enabled %}AI generation is unavailable. Configure GEMINI_API_KEY and restart Flask.{% else %}Review and edit the AI draft before publishing.{% endif %}
+						</div>
+					</div>
+					<div class="col-12">
+						<label class="form-label" for="application_url">Application link (optional)</label>
+						<input class="form-control" id="application_url" name="application_url" type="url" inputmode="url" maxlength="2048" placeholder="https://your-company.example/careers/role" value="{{ form_data.application_url }}">
+						<div class="form-text">Add an HTTPS application link if you have one. Leave blank to publish without an application link.</div>
+					</div>
+				</div>
+				<div class="d-flex justify-content-end mt-4">
+					<button class="btn btn-primary" type="submit">Publish job</button>
+				</div>
+			</form>
+		</section>
+
+		{% if employer_posts %}
+			<section class="posted-panel" aria-labelledby="posted-jobs-title">
+				<h2 id="posted-jobs-title">Your recent job posts</h2>
+				{% for post in employer_posts %}
+					<article class="posted-job">
+						<h3>{{ post.title }}</h3>
+						<p>{{ post.company }} · {{ post.location }} · {{ post.employment_type }}</p>
+						<p class="mt-1">{{ application_counts.get(post.id, 0) }} candidate applications</p>
+						<a class="btn btn-sm btn-outline-primary mt-2" href="{{ url_for('edit_employer_job', job_id=post.id) }}">Edit job</a>
+					</article>
+				{% endfor %}
+			</section>
+		{% endif %}
+		{% endif %}
+	</main>
+
+	<script>
+		const generateButton = document.getElementById("generate-description");
+		const description = document.getElementById("description");
+		const status = document.getElementById("description-status");
+
+		if (generateButton && !generateButton.disabled) {
+			generateButton.addEventListener("click", async () => {
+				const details = Object.fromEntries(
+					["title", "company", "location", "employment_type", "experience_level", "salary_range", "skills", "requirements"]
+						.map((name) => [name, document.getElementById(name).value.trim()])
+				);
+				if (!details.title || !details.requirements) {
+					status.textContent = "Enter the job title and responsibilities/requirements first.";
+					return;
+				}
+
+				generateButton.disabled = true;
+				generateButton.textContent = "Generating...";
+				status.textContent = "Creating a professional draft from your job details...";
+				try {
+					const response = await fetch("{{ url_for('generate_job_description') }}", {
+						method: "POST",
+						headers: {"Content-Type": "application/json"},
+						body: JSON.stringify({
+							...details,
+							csrf_token: "{{ csrf_token }}"
+						})
+					});
+					const result = await response.json();
+					if (!response.ok) throw new Error(result.error || "Could not generate the description.");
+					description.value = result.description;
+					status.textContent = "Draft generated. Review and edit it before publishing.";
+				} catch (error) {
+					status.textContent = error.message || "AI could not generate the description. Please try again.";
+				} finally {
+					generateButton.disabled = false;
+					generateButton.textContent = "Use AI to write description";
+				}
+			});
+		}
+	</script>
+	{% include "_job_assistant.html" %}
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Edit your employer job listing.">
+	<title>Edit {{ post.title }} | Job Portal</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<style>
+		:root {
+			--ink: #17243b;
+			--muted: #66738a;
+			--brand: #2457d6;
+			--line: #e4e9f1;
+		}
+		body {
+			min-height: 100vh;
+			color: var(--ink);
+			background: #f3f6fb;
+			font-family: Inter, "Segoe UI", Arial, sans-serif;
+		}
+		.site-header {
+			background: #fff;
+			border-bottom: 1px solid var(--line);
+		}
+		.header-inner,
+		.page-shell {
+			width: min(100% - 32px, 1000px);
+			margin: 0 auto;
+		}
+		.header-inner {
+			min-height: 68px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 18px;
+		}
+		.brand {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			color: var(--ink);
+			font-size: 19px;
+			font-weight: 800;
+			text-decoration: none;
+		}
+		.brand-logo {
+			width: 48px;
+			height: 48px;
+			object-fit: contain;
+		}
+		.header-links {
+			display: flex;
+			gap: 18px;
+		}
+		.header-links a {
+			color: var(--brand);
+			font-size: 14px;
+			font-weight: 700;
+			text-decoration: none;
+		}
+		.page-shell {
+			padding: 38px 0 56px;
+		}
+		.form-panel {
+			padding: clamp(20px, 4vw, 34px);
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 14px;
+			box-shadow: 0 8px 26px rgba(27, 45, 80, 0.06);
+		}
+		.page-heading {
+			margin-bottom: 24px;
+		}
+		.page-heading h1 {
+			margin: 0 0 8px;
+			font-size: clamp(27px, 4vw, 35px);
+			font-weight: 800;
+		}
+		.page-heading p {
+			margin: 0;
+			color: var(--muted);
+		}
+		.company-name {
+			padding: 11px 14px;
+			background: #f6f8fc;
+			border: 1px solid var(--line);
+			border-radius: 8px;
+			font-weight: 650;
+		}
+		.form-label {
+			font-size: 14px;
+			font-weight: 700;
+		}
+		.form-control,
+		.form-select {
+			min-height: 44px;
+			border-color: #d9e0eb;
+		}
+		textarea.form-control {
+			min-height: 135px;
+		}
+		.description-area {
+			min-height: 220px !important;
+		}
+		.form-control:focus,
+		.form-select:focus {
+			border-color: var(--brand);
+			box-shadow: 0 0 0 3px rgba(36, 87, 214, .12);
+		}
+		.form-actions {
+			display: flex;
+			justify-content: flex-end;
+			gap: 10px;
+			padding-top: 20px;
+			border-top: 1px solid #edf0f5;
+		}
+		.error-list {
+			padding: 14px 18px;
+			color: #842029;
+			background: #f8d7da;
+			border: 1px solid #f1aeb5;
+			border-radius: 8px;
+		}
+		@media (max-width: 600px) {
+			.page-shell {
+				padding-top: 26px;
+			}
+			.header-links {
+				gap: 12px;
+			}
+		}
+	</style>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/portal_ui.css') }}">
+</head>
+<body>
+	<header class="site-header">
+		<div class="header-inner">
+			<a href="{{ url_for('home') }}" class="brand">
+				<img src="{{ url_for('template_logo') }}" alt="" class="brand-logo">
+				<span>Job Portal</span>
+			</a>
+			<div class="header-account">{% include "_header_profile.html" %}</div>
+		</div>
+	</header>
+	<main class="page-shell page-shell--form">
+		{% include "_flash_toasts.html" %}
+		<section class="form-panel">
+			<div class="page-heading">
+				<h1>Edit job listing</h1>
+				<p>Update the listing details shown to candidates. Existing applications will remain linked to this job.</p>
+			</div>
+
+			{% if errors %}
+				<div class="error-list mb-4" role="alert">
+					<ul class="mb-0">
+						{% for error in errors %}
+							<li>{{ error }}</li>
+						{% endfor %}
+					</ul>
+				</div>
+			{% endif %}
+
+			<form method="POST" action="{{ url_for('edit_employer_job', job_id=post.id) }}">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+				<div class="row g-3">
+					<div class="col-md-6">
+						<label class="form-label" for="title">Job title *</label>
+						<input class="form-control" id="title" name="title" maxlength="200" required value="{{ form_data.title }}">
+					</div>
+					<div class="col-md-6">
+						<label class="form-label">Company</label>
+						<div class="company-name">{{ post.company }}</div>
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="location">Location / remote policy *</label>
+						<input class="form-control" id="location" name="location" maxlength="120" required value="{{ form_data.location }}">
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="employment_type">Employment type *</label>
+						<select class="form-select" id="employment_type" name="employment_type" required>
+							<option value="">Choose employment type</option>
+							{% for option in ["Full-time", "Part-time", "Contract", "Internship", "Temporary"] %}
+								<option value="{{ option }}" {% if form_data.employment_type == option %}selected{% endif %}>{{ option }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="experience_level">Experience level *</label>
+						<input class="form-control" id="experience_level" name="experience_level" maxlength="80" required value="{{ form_data.experience_level }}">
+					</div>
+					<div class="col-md-6">
+						<label class="form-label" for="salary_range">Salary range</label>
+						<input class="form-control" id="salary_range" name="salary_range" maxlength="100" value="{{ form_data.salary_range }}">
+					</div>
+					<div class="col-12">
+						<label class="form-label" for="skills">Key skills *</label>
+						<input class="form-control" id="skills" name="skills" maxlength="1000" required value="{{ form_data.skills }}">
+					</div>
+					<div class="col-12">
+						<label class="form-label" for="requirements">Responsibilities and requirements *</label>
+						<textarea class="form-control" id="requirements" name="requirements" maxlength="3000" required>{{ form_data.requirements }}</textarea>
+					</div>
+					<div class="col-12">
+						<label class="form-label" for="description">Job description *</label>
+						<textarea class="form-control description-area" id="description" name="description" maxlength="5000" required>{{ form_data.description }}</textarea>
+					</div>
+					<div class="col-12">
+						<label class="form-label" for="application_url">Application link (optional)</label>
+						<input class="form-control" id="application_url" name="application_url" type="url" inputmode="url" maxlength="2048" placeholder="https://your-company.example/careers/role" value="{{ form_data.application_url }}">
+						<div class="form-text">Use an HTTPS link or leave this blank.</div>
+					</div>
+				</div>
+				<div class="form-actions mt-4">
+					<a class="btn btn-outline-secondary" href="{{ url_for('employer_manage_jobs') }}">Cancel</a>
+					<button class="btn btn-primary" type="submit">Save changes</button>
+				</div>
+			</form>
+		</section>
+	</main>
+</body>
+</html>

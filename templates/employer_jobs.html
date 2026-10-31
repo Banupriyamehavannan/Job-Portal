@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Manage and edit your employer job listings.">
+	<title>Manage Jobs | Job Portal</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<style>
+		:root {
+			--ink: #17243b;
+			--muted: #66738a;
+			--brand: #2457d6;
+			--line: #e4e9f1;
+		}
+		body {
+			min-height: 100vh;
+			color: var(--ink);
+			background: #f3f6fb;
+			font-family: Inter, "Segoe UI", Arial, sans-serif;
+		}
+		.site-header {
+			background: #fff;
+			border-bottom: 1px solid var(--line);
+		}
+		.header-inner,
+		.page-shell {
+			width: min(100% - 32px, 1320px);
+			margin: 0 auto;
+		}
+		.header-inner {
+			min-height: 68px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 18px;
+		}
+		.brand {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			color: var(--ink);
+			font-size: 19px;
+			font-weight: 800;
+			text-decoration: none;
+		}
+		.brand-logo {
+			width: 48px;
+			height: 48px;
+			object-fit: contain;
+		}
+		.header-links {
+			display: flex;
+			gap: 18px;
+		}
+		.header-links a {
+			color: var(--brand);
+			font-size: 14px;
+			font-weight: 700;
+			text-decoration: none;
+		}
+		.page-shell {
+			padding: 38px 0 56px;
+		}
+		.page-heading {
+			display: flex;
+			align-items: flex-end;
+			justify-content: space-between;
+			gap: 18px;
+			margin-bottom: 24px;
+		}
+		.page-heading h1 {
+			margin: 0 0 8px;
+			font-size: clamp(27px, 4vw, 36px);
+			font-weight: 800;
+		}
+		.page-heading p {
+			margin: 0;
+			color: var(--muted);
+		}
+		.job-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+			gap: 18px;
+			align-items: stretch;
+		}
+		.job-card,
+		.empty-state {
+			padding: 22px;
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 12px;
+			box-shadow: 0 5px 18px rgba(27, 45, 80, 0.045);
+		}
+		.job-card {
+			display: flex;
+			min-width: 0;
+			flex-direction: column;
+			transition: box-shadow 160ms ease, transform 160ms ease;
+		}
+		.job-card:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 10px 24px rgba(27, 45, 80, 0.09);
+		}
+		.job-card h2 {
+			margin: 0 0 6px;
+			font-size: 19px;
+			font-weight: 780;
+			overflow-wrap: anywhere;
+		}
+		.job-company {
+			margin: 0 0 14px;
+			color: var(--muted);
+			font-size: 14px;
+			font-weight: 650;
+		}
+		.job-meta {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 12px;
+			margin-bottom: 18px;
+		}
+		.meta-label {
+			display: block;
+			margin-bottom: 3px;
+			color: var(--muted);
+			font-size: 11px;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: .04em;
+		}
+		.meta-value {
+			font-size: 13px;
+			font-weight: 650;
+			overflow-wrap: anywhere;
+		}
+		.application-count {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			color: #2457a5;
+			font-size: 13px;
+			font-weight: 700;
+		}
+		.job-card-actions {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			margin-top: auto;
+			padding-top: 16px;
+			border-top: 1px solid #edf0f5;
+		}
+		.posted-date {
+			color: var(--muted);
+			font-size: 12px;
+		}
+		.empty-state {
+			padding: 48px 22px;
+			color: var(--muted);
+			text-align: center;
+		}
+		.empty-state h2 {
+			color: var(--ink);
+			font-size: 20px;
+			font-weight: 800;
+		}
+		@media (max-width: 600px) {
+			.page-shell {
+				padding-top: 28px;
+			}
+			.page-heading {
+				align-items: flex-start;
+				flex-direction: column;
+			}
+			.job-card,
+			.empty-state {
+				padding: 18px;
+			}
+		}
+	</style>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/portal_ui.css') }}">
+</head>
+<body>
+	<header class="site-header">
+		<div class="header-inner">
+			<a href="{{ url_for('home') }}" class="brand">
+				<img src="{{ url_for('template_logo') }}" alt="" class="brand-logo">
+				<span>Job Portal</span>
+			</a>
+			<div class="header-account">{% include "_header_profile.html" %}</div>
+		</div>
+	</header>
+	<main class="page-shell">
+		{% include "_flash_toasts.html" %}
+		<section class="page-heading">
+			<div>
+				<h1>Manage jobs</h1>
+				<p>Review your listings and update job details whenever you need.</p>
+			</div>
+			<a class="btn btn-primary" href="{{ url_for('post_job') }}">Post a new job</a>
+		</section>
+
+		{% if posts %}
+			<div class="job-grid">
+				{% for post in posts %}
+					<article class="job-card">
+						<div>
+							<h2>{{ post.title }}</h2>
+							<p class="job-company">{{ post.company }}</p>
+							<div class="job-meta">
+								<div>
+									<span class="meta-label">Location</span>
+									<span class="meta-value">{{ post.location }}</span>
+								</div>
+								<div>
+									<span class="meta-label">Employment</span>
+									<span class="meta-value">{{ post.employment_type }}</span>
+								</div>
+								<div>
+									<span class="meta-label">Experience</span>
+									<span class="meta-value">{{ post.experience_level }}</span>
+								</div>
+								<div>
+									<span class="meta-label">Salary</span>
+									<span class="meta-value">{{ post.salary_range or "Not listed" }}</span>
+								</div>
+							</div>
+						</div>
+						<div class="job-card-actions">
+							<div>
+								<span class="application-count">{{ application_counts.get(post.id, 0) }} applications</span>
+								<span class="posted-date d-block mt-1">Posted {{ post.created_at.strftime("%b %d, %Y") }}</span>
+							</div>
+							<a class="btn btn-outline-primary" href="{{ url_for('edit_employer_job', job_id=post.id) }}">Edit job</a>
+						</div>
+					</article>
+				{% endfor %}
+			</div>
+		{% else %}
+			<div class="empty-state">
+				<h2>No jobs posted yet</h2>
+				<p>Once you publish a listing, you can manage and edit it here.</p>
+				<a class="btn btn-primary" href="{{ url_for('post_job') }}">Post your first job</a>
+			</div>
+		{% endif %}
+	</main>
+</body>
+</html>

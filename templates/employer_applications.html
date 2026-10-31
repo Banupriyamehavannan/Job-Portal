@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Review candidates who applied to your job listings.">
+	<title>Candidate Applications | Job Portal</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<style>
+		:root {
+			--ink: #17243b;
+			--muted: #66738a;
+			--brand: #2457d6;
+			--line: #e4e9f1;
+		}
+		body {
+			min-height: 100vh;
+			color: var(--ink);
+			background: #f3f6fb;
+			font-family: Inter, "Segoe UI", Arial, sans-serif;
+		}
+		.site-header {
+			background: #fff;
+			border-bottom: 1px solid var(--line);
+		}
+		.header-inner,
+		.page-shell {
+			width: min(100% - 40px, 1480px);
+			margin: 0 auto;
+		}
+		.header-inner {
+			min-height: 68px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 20px;
+		}
+		.brand {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			color: var(--ink);
+			font-size: 19px;
+			font-weight: 800;
+			text-decoration: none;
+		}
+		.brand-logo {
+			width: 48px;
+			height: 48px;
+			object-fit: contain;
+		}
+		.back-link {
+			color: var(--brand);
+			font-size: 14px;
+			font-weight: 700;
+			text-decoration: none;
+		}
+		.page-shell {
+			padding: 38px 0 56px;
+		}
+		.page-heading {
+			margin-bottom: 22px;
+		}
+		.page-heading h1 {
+			margin: 0 0 8px;
+			font-size: clamp(26px, 4vw, 34px);
+			font-weight: 800;
+		}
+		.page-heading p {
+			margin: 0;
+			color: var(--muted);
+		}
+		.application-filters {
+			margin-bottom: 22px;
+			padding: 18px;
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 12px;
+			box-shadow: 0 5px 18px rgba(27, 45, 80, 0.045);
+		}
+		.filter-grid {
+			display: grid;
+			grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(170px, 1fr)) auto;
+			align-items: end;
+			gap: 12px;
+		}
+		.filter-label {
+			display: block;
+			margin-bottom: 6px;
+			color: var(--ink);
+			font-size: 13px;
+			font-weight: 700;
+		}
+		.filter-actions {
+			display: flex;
+			gap: 8px;
+		}
+		.filter-results {
+			margin: 12px 0 0;
+			color: var(--muted);
+			font-size: 13px;
+		}
+		.application-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(min(100%, 390px), 1fr));
+			gap: 18px;
+			align-items: stretch;
+		}
+		.application-card,
+		.empty-state {
+			padding: 22px;
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 12px;
+			box-shadow: 0 5px 18px rgba(27, 45, 80, 0.045);
+		}
+		.application-card {
+			display: flex;
+			min-width: 0;
+			flex-direction: column;
+			margin: 0;
+			transition: box-shadow 160ms ease, transform 160ms ease;
+		}
+		.application-card:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 10px 24px rgba(27, 45, 80, 0.09);
+		}
+		.application-card h2 {
+			margin: 0 0 5px;
+			font-size: 19px;
+			font-weight: 750;
+		}
+		.application-card-summary {
+			display: flex;
+			align-items: flex-start;
+			justify-content: space-between;
+			gap: 16px;
+		}
+		.application-card-summary-copy {
+			display: flex;
+			min-width: 0;
+			align-items: flex-start;
+			gap: 12px;
+		}
+		.application-card-summary-text {
+			min-width: 0;
+		}
+		.applicant-profile-avatar {
+			width: 48px;
+			height: 48px;
+			flex: 0 0 48px;
+			border: 1px solid var(--line);
+			border-radius: 50%;
+			background: #f3f6fb;
+			object-fit: cover;
+		}
+		.application-card-summary .application-meta {
+			margin-bottom: 12px;
+		}
+		.application-card .view-application-button {
+			align-self: flex-start;
+			margin-top: auto;
+		}
+		.application-meta {
+			margin: 0 0 14px;
+			color: var(--muted);
+			font-size: 13px;
+		}
+		.cover-letter {
+			padding: 12px 14px;
+			background: #f7f9fc;
+			border-radius: 8px;
+			white-space: pre-line;
+			overflow-wrap: anywhere;
+		}
+		.applicant-images {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 18px;
+			margin: 16px 0;
+		}
+		.applicant-image-item {
+			margin: 0;
+			color: var(--muted);
+			font-size: 12px;
+			font-weight: 650;
+		}
+		.applicant-profile-image,
+		.applicant-cover-image {
+			display: block;
+			margin-top: 7px;
+			border: 1px solid var(--line);
+			background: #f3f6fb;
+			object-fit: cover;
+		}
+		.applicant-profile-image {
+			width: 88px;
+			height: 88px;
+			border-radius: 50%;
+		}
+		.applicant-cover-image {
+			width: min(320px, 70vw);
+			height: 120px;
+			border-radius: 9px;
+		}
+		.application-details-modal .modal-header {
+			align-items: flex-start;
+		}
+		.application-details-modal .modal-title {
+			font-size: 20px;
+			font-weight: 750;
+		}
+		.application-details-modal .application-meta {
+			margin: 5px 0 0;
+		}
+		.application-detail-contact {
+			display: grid;
+			gap: 8px;
+			margin: 0 0 18px;
+		}
+		.application-detail-contact p {
+			margin: 0;
+			overflow-wrap: anywhere;
+		}
+		.status-badge {
+			display: inline-block;
+			padding: 7px 11px;
+			border-radius: 999px;
+			font-size: 12px;
+			font-weight: 750;
+		}
+		.status-pending {
+			color: #815b00;
+			background: #fff4d6;
+		}
+		.status-accepted {
+			color: #2457a5;
+			background: #e8f0ff;
+		}
+		.status-rejected {
+			color: #a52b36;
+			background: #fde9eb;
+		}
+		.application-card-actions {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		.edit-decision-icon {
+			width: 34px;
+			height: 34px;
+			display: inline-grid;
+			place-items: center;
+			padding: 0;
+			color: var(--brand);
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 8px;
+		}
+		.edit-decision-icon:hover {
+			background: #f2f6ff;
+			border-color: #b8c9f4;
+		}
+		.edit-decision-icon svg {
+			width: 16px;
+			height: 16px;
+		}
+		.form-control {
+			border-color: #dce3ed;
+			border-radius: 8px;
+		}
+		.empty-state {
+			text-align: center;
+			color: var(--muted);
+		}
+		@media (max-width: 600px) {
+			.header-inner,
+			.page-shell {
+				width: calc(100% - 24px);
+			}
+			.filter-grid {
+				grid-template-columns: 1fr;
+			}
+			.page-shell {
+				padding-top: 28px;
+			}
+			.application-card {
+				padding: 18px;
+			}
+			.application-card-summary {
+				flex-direction: column;
+			}
+		}
+	</style>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/portal_ui.css') }}">
+</head>
+<body>
+	<header class="site-header">
+		<div class="header-inner">
+			<a href="{{ url_for('home') }}" class="brand">
+				<img src="{{ url_for('template_logo') }}" alt="" class="brand-logo">
+				<span>Job Portal</span>
+			</a>
+			<div class="header-account">{% include "_header_profile.html" %}</div>
+		</div>
+	</header>
+	<main class="page-shell">
+		{% include "_flash_toasts.html" %}
+		<div class="page-heading">
+			<h1>Candidate applications</h1>
+			<p>Review candidates who applied to your posted jobs.</p>
+		</div>
+		<form class="application-filters" method="GET" action="{{ url_for('employer_applications') }}" aria-label="Filter candidate applications">
+			<div class="filter-grid">
+				<div>
+					<label class="filter-label" for="application-search">Search candidates or positions</label>
+					<input class="form-control" id="application-search" name="search" type="search" placeholder="Candidate name, email, or job title" value="{{ search_query }}">
+				</div>
+				<div>
+					<label class="filter-label" for="application-position">Position</label>
+					<select class="form-select" id="application-position" name="position">
+						<option value="">All positions</option>
+						{% for job in employer_jobs %}
+							<option value="{{ job.id }}" {% if selected_position == job.id|string %}selected{% endif %}>{{ job.title }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div>
+					<label class="filter-label" for="application-date">Applied on</label>
+					<input class="form-control" id="application-date" name="applied_on" type="date" value="{{ selected_date }}">
+				</div>
+				<div class="filter-actions">
+					<button class="btn btn-primary" type="submit">Filter</button>
+					<a class="btn btn-outline-secondary" href="{{ url_for('employer_applications') }}">Clear</a>
+				</div>
+			</div>
+			<p class="filter-results">Showing {{ applications|length }} application{% if applications|length != 1 %}s{% endif %}.</p>
+		</form>
+		{% if applications %}
+			<div class="application-grid">
+			{% for application in applications %}
+				<article class="application-card">
+					<div class="application-card-summary mb-3">
+						<div class="application-card-summary-copy">
+							{% if application.profile_image_filename %}
+								<img class="applicant-profile-avatar" src="{{ url_for('employer_application_image', application_id=application.id, image_type='profile') }}" alt="Profile image for {{ application.applicant_name }}">
+							{% endif %}
+							<div class="application-card-summary-text">
+								<h2>{{ application.applicant_name }}</h2>
+								<p class="application-meta">
+									Applied for <strong>{{ application.job_title }}</strong>
+									· {{ application.submitted_at|application_local_datetime("%b %d, %Y at %I:%M %p") }}
+								</p>
+							</div>
+						</div>
+						<div class="application-card-actions">
+							<span class="status-badge status-{{ application.status }}">{{ application.status|replace("_", " ")|title }}</span>
+						</div>
+					</div>
+					<button class="btn btn-primary view-application-button" type="button" data-bs-toggle="modal" data-bs-target="#application-details-{{ application.id }}">View application</button>
+				</article>
+
+				<div class="modal fade application-details-modal" id="application-details-{{ application.id }}" tabindex="-1" aria-labelledby="application-details-title-{{ application.id }}" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
+						<div class="modal-content">
+							<div class="modal-header">
+								<div>
+									<h2 class="modal-title" id="application-details-title-{{ application.id }}">{{ application.applicant_name }}</h2>
+									<p class="application-meta">
+										Applied for <strong>{{ application.job_title }}</strong>
+										· {{ application.submitted_at|application_local_datetime("%b %d, %Y at %I:%M %p") }}
+									</p>
+								</div>
+								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close application details"></button>
+							</div>
+							<div class="modal-body">
+								<div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+									<span class="status-badge status-{{ application.status }}">{{ application.status|replace("_", " ")|title }}</span>
+									{% if application.status in ["accepted", "rejected"] %}
+										<button class="edit-decision-icon" type="button" data-edit-decision="{{ application.id }}" aria-label="Edit application decision" title="Edit application decision" aria-expanded="false" aria-controls="edit-decision-{{ application.id }}">
+											<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+												<path d="M12 20h9"></path>
+												<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path>
+											</svg>
+										</button>
+									{% endif %}
+								</div>
+								<div class="application-detail-contact">
+									<p><strong>Email:</strong> <a href="mailto:{{ application.applicant_email }}">{{ application.applicant_email }}</a></p>
+									<p><strong>Phone:</strong> {{ application.phone }}</p>
+									<p><strong>Resume:</strong> {{ application.resume_original_name }}</p>
+								</div>
+					{% if application.cover_image_filename %}
+						<div class="applicant-images">
+							<figure class="applicant-image-item">
+								<figcaption>Cover image</figcaption>
+								<a href="{{ url_for('employer_application_image', application_id=application.id, image_type='cover') }}" target="_blank" rel="noopener noreferrer">
+									<img class="applicant-cover-image" src="{{ url_for('employer_application_image', application_id=application.id, image_type='cover') }}" alt="Cover image provided by {{ application.applicant_name }}">
+								</a>
+							</figure>
+						</div>
+					{% endif %}
+					{% if application.cover_letter %}
+						<h3 class="fs-6 fw-bold">Cover letter</h3>
+						<p class="cover-letter">{{ application.cover_letter }}</p>
+					{% endif %}
+					<a class="btn btn-primary" href="{{ url_for('employer_application_resume', application_id=application.id) }}">Download resume</a>
+					{% if application.status in ["accepted", "rejected"] %}
+						<div class="mt-4 pt-3 border-top">
+							{% if application.status == "accepted" %}
+								<p class="mb-0 text-primary fw-semibold">Candidate accepted. This application decision is complete.</p>
+							{% else %}
+								<p class="mb-0 fw-semibold text-danger">Candidate rejected. This application decision is complete.</p>
+								{% if application.rejection_reason %}
+									<p class="mt-2 mb-0"><strong>Rejection reason:</strong> {{ application.rejection_reason }}</p>
+								{% endif %}
+							{% endif %}
+						</div>
+						<form class="mt-3 pt-3 border-top" id="edit-decision-{{ application.id }}" method="POST" action="{{ url_for('update_application_status', application_id=application.id, search=search_query, position=selected_position, applied_on=selected_date) }}" hidden>
+							<input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+							<input type="hidden" name="edit_decision" value="1">
+							<label class="form-label fw-bold" for="decision-status-{{ application.id }}">Application decision</label>
+							<select class="form-select mb-3" id="decision-status-{{ application.id }}" name="status" data-decision-status="{{ application.id }}" required>
+								<option value="accepted" {% if application.status == "accepted" %}selected{% endif %}>Accepted</option>
+								<option value="rejected" {% if application.status == "rejected" %}selected{% endif %}>Rejected</option>
+							</select>
+							<div data-rejection-reason-field="{{ application.id }}" {% if application.status != "rejected" %}hidden{% endif %}>
+								<label class="form-label fw-bold" for="edit-rejection-reason-{{ application.id }}">Rejection reason <span class="text-secondary fw-normal">(required when rejecting)</span></label>
+								<textarea class="form-control mb-3" id="edit-rejection-reason-{{ application.id }}" name="rejection_reason" rows="2" maxlength="1000" placeholder="Share constructive feedback with the candidate." {% if application.status == "rejected" %}required{% endif %}>{{ application.rejection_reason or '' }}</textarea>
+							</div>
+							<div class="d-flex flex-wrap gap-2">
+								<button class="btn btn-primary" type="submit">Save decision</button>
+								<button class="btn btn-outline-secondary" type="button" data-cancel-decision="{{ application.id }}">Cancel</button>
+							</div>
+						</form>
+					{% else %}
+						<form class="mt-4 pt-3 border-top" method="POST" action="{{ url_for('update_application_status', application_id=application.id, search=search_query, position=selected_position, applied_on=selected_date) }}">
+							<input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+							<label class="form-label fw-bold" for="rejection-reason-{{ application.id }}">Rejection reason <span class="text-secondary fw-normal">(required when rejecting)</span></label>
+							<textarea class="form-control mb-3" id="rejection-reason-{{ application.id }}" name="rejection_reason" rows="2" maxlength="1000" placeholder="Share constructive feedback with the candidate.">{{ application.rejection_reason or '' }}</textarea>
+							<div class="d-flex flex-wrap gap-2">
+								<button class="btn btn-primary" name="status" value="accepted" type="submit">Accept candidate</button>
+								<button class="btn btn-outline-danger" name="status" value="rejected" type="submit">Reject candidate</button>
+							</div>
+							<p class="form-text mt-2 mb-0">The candidate will see the status in My Applications and receive an email update when SMTP is configured.</p>
+						</form>
+					{% endif %}
+							</div>
+						</div>
+					</div>
+				</div>
+			{% endfor %}
+			</div>
+		{% else %}
+			<div class="empty-state">
+				{% if search_query or selected_position or selected_date %}
+					<h2 class="h5 fw-bold">No matching applications</h2>
+					<p class="mb-0">Try changing or clearing the search and filters.</p>
+				{% else %}
+					<h2 class="h5 fw-bold">No candidate applications yet</h2>
+					<p class="mb-0">Applications for your job posts will appear here.</p>
+				{% endif %}
+			</div>
+		{% endif %}
+	</main>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		document.querySelectorAll("[data-edit-decision]").forEach((button) => {
+			button.addEventListener("click", () => {
+				const form = document.getElementById(`edit-decision-${button.dataset.editDecision}`);
+				form.hidden = false;
+				button.setAttribute("aria-expanded", "true");
+				button.hidden = true;
+			});
+		});
+
+		document.querySelectorAll("[data-cancel-decision]").forEach((button) => {
+			button.addEventListener("click", () => {
+				const applicationId = button.dataset.cancelDecision;
+				const form = document.getElementById(`edit-decision-${applicationId}`);
+				const editButton = document.querySelector(`[data-edit-decision="${applicationId}"]`);
+				form.hidden = true;
+				editButton.hidden = false;
+				editButton.setAttribute("aria-expanded", "false");
+				form.reset();
+				updateRejectionReasonField(applicationId);
+			});
+		});
+
+		function updateRejectionReasonField(applicationId) {
+			const status = document.querySelector(`[data-decision-status="${applicationId}"]`);
+			const reasonField = document.querySelector(`[data-rejection-reason-field="${applicationId}"]`);
+			const reason = reasonField.querySelector("textarea");
+			const rejected = status.value === "rejected";
+			reasonField.hidden = !rejected;
+			reason.required = rejected;
+		}
+
+		document.querySelectorAll("[data-decision-status]").forEach((select) => {
+			select.addEventListener("change", () => {
+				updateRejectionReasonField(select.dataset.decisionStatus);
+			});
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+{% if current_user.is_authenticated %}
+	<details class="profile-menu">
+		<summary aria-label="Open account menu">
+			{% if current_user.role == "employer" and current_user.company_logo_filename %}
+				<img class="profile-icon" src="{{ url_for('application_upload', filename=current_user.company_logo_filename) }}"
+				     alt="Company logo for {{ current_user.company_name or current_user.name }}" title="{{ current_user.company_name or current_user.name }}">
+			{% elif current_user.profile_image_filename %}
+				<img class="profile-icon" src="{{ url_for('application_upload', filename=current_user.profile_image_filename) }}"
+				     alt="Profile image for {{ current_user.name }}" title="{{ current_user.name }}">
+			{% else %}
+				<span class="profile-icon" role="img" title="{{ current_user.name }}"
+				      aria-label="Profile icon for {{ current_user.name }}">{{ current_user.name.strip()|first|upper }}</span>
+			{% endif %}
+		</summary>
+		<div class="profile-menu-content">
+			<div class="profile-menu-heading">
+				{% if current_user.role == "employer" and current_user.company_logo_filename %}
+					<img class="profile-menu-avatar" src="{{ url_for('application_upload', filename=current_user.company_logo_filename) }}"
+					     alt="Company logo for {{ current_user.company_name or current_user.name }}">
+				{% elif current_user.profile_image_filename %}
+					<img class="profile-menu-avatar" src="{{ url_for('application_upload', filename=current_user.profile_image_filename) }}"
+					     alt="">
+				{% else %}
+					<span class="profile-menu-avatar profile-menu-avatar--initial" aria-hidden="true">{{ current_user.name.strip()|first|upper }}</span>
+				{% endif %}
+				<div class="profile-menu-identity">
+					<strong>{{ current_user.name }}</strong>
+					<span>{{ current_user.role|replace("_", " ")|title }}</span>
+				</div>
+			</div>
+			<div class="profile-menu-links">
+			{% if current_user.role == "admin" %}
+				<a href="{{ url_for('admin_dashboard') }}">Admin dashboard</a>
+			{% elif current_user.role == "job_seeker" %}
+				<a href="{{ url_for('my_applications') }}">My Applications</a>
+				<a href="{{ url_for('saved_jobs') }}">Saved Jobs</a>
+				<a href="{{ url_for('jobs') }}">Browse jobs</a>
+			{% elif current_user.role == "employer" %}
+				<a href="{{ url_for('jobs') }}">Browse jobs</a>
+				<a href="{{ url_for('employer_applications') }}">Candidate Applications</a>
+				<a href="{{ url_for('employer_manage_jobs') }}">Manage jobs</a>
+			{% endif %}
+			</div>
+			<form method="POST" action="{{ url_for('logout') }}">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token_value() }}">
+				<button class="profile-menu-logout" type="submit">Log out</button>
+			</form>
+		</div>
+	</details>
+{% else %}
+	<a class="profile-icon profile-icon-link" href="{{ url_for('login') }}" aria-label="Log in">
+		<svg viewBox="0 0 24 24" aria-hidden="true">
+			<circle cx="12" cy="8" r="3.5"></circle>
+			<path d="M4.5 20a7.5 7.5 0 0 1 15 0"></path>
+		</svg>
+	</a>
+{% endif %}

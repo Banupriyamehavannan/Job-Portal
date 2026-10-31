@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Job Portal administrator dashboard.">
+	<title>Admin Dashboard | Job Portal</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<style>
+		:root {
+			--ink: #17243b;
+			--muted: #66738a;
+			--brand: #2457d6;
+			--line: #e4e9f1;
+		}
+		body {
+			min-height: 100vh;
+			color: var(--ink);
+			background: #f3f6fb;
+			font-family: Inter, "Segoe UI", Arial, sans-serif;
+		}
+		.site-header {
+			background: #fff;
+			border-bottom: 1px solid var(--line);
+		}
+		.header-inner,
+		.page-shell {
+			width: min(100% - 32px, 1440px);
+			margin: 0 auto;
+		}
+		.header-inner {
+			min-height: 68px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 18px;
+		}
+		.brand {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			color: var(--ink);
+			font-size: 19px;
+			font-weight: 800;
+			text-decoration: none;
+		}
+		.brand-logo {
+			width: 48px;
+			height: 48px;
+			object-fit: contain;
+		}
+		.header-actions {
+			display: flex;
+			align-items: center;
+			gap: 18px;
+		}
+		.header-actions a {
+			color: var(--brand);
+			font-size: 14px;
+			font-weight: 700;
+			text-decoration: none;
+		}
+		.page-shell {
+			padding: 38px 0 56px;
+		}
+		.page-heading {
+			margin-bottom: 26px;
+		}
+		.page-heading h1 {
+			margin: 0 0 8px;
+			font-size: clamp(27px, 4vw, 36px);
+			font-weight: 800;
+		}
+		.page-heading p {
+			margin: 0;
+			color: var(--muted);
+		}
+		.metrics-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+			gap: 16px;
+			margin-bottom: 30px;
+		}
+		.metric-card,
+		.panel {
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 12px;
+			box-shadow: 0 5px 18px rgba(27, 45, 80, 0.045);
+		}
+		.metric-card {
+			padding: 20px;
+		}
+		.metric-label {
+			margin: 0 0 8px;
+			color: var(--muted);
+			font-size: 13px;
+			font-weight: 650;
+		}
+		.metric-value {
+			margin: 0;
+			font-size: 30px;
+			font-weight: 800;
+			line-height: 1.1;
+		}
+		.panel {
+			overflow: hidden;
+		}
+		.panel-heading {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			padding: 20px 22px;
+			border-bottom: 1px solid var(--line);
+		}
+		.panel-heading h2 {
+			margin: 0;
+			font-size: 19px;
+			font-weight: 800;
+		}
+		.panel-heading span {
+			color: var(--muted);
+			font-size: 13px;
+		}
+		.table-responsive {
+			width: 100%;
+		}
+		.jobs-table {
+			margin: 0;
+			vertical-align: middle;
+		}
+		.jobs-table th {
+			padding: 13px 18px;
+			color: var(--muted);
+			background: #f8faff;
+			font-size: 11px;
+			font-weight: 800;
+			letter-spacing: .04em;
+			text-transform: uppercase;
+			white-space: nowrap;
+		}
+		.jobs-table td {
+			padding: 15px 18px;
+			font-size: 13px;
+		}
+		.job-title {
+			display: block;
+			color: var(--ink);
+			font-weight: 750;
+		}
+		.subtext {
+			display: block;
+			margin-top: 3px;
+			color: var(--muted);
+			font-size: 12px;
+		}
+		.empty-state {
+			padding: 38px 20px;
+			color: var(--muted);
+			text-align: center;
+		}
+		@media (max-width: 600px) {
+			.header-inner,
+			.page-shell {
+				width: calc(100% - 28px);
+			}
+			.page-shell {
+				padding-top: 28px;
+			}
+			.panel-heading {
+				align-items: flex-start;
+				flex-direction: column;
+				padding: 18px;
+			}
+			.jobs-table td {
+				padding: 13px 14px;
+			}
+		}
+	</style>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/portal_ui.css') }}">
+</head>
+<body>
+	<header class="site-header">
+		<div class="header-inner">
+			<a href="{{ url_for('admin_dashboard') }}" class="brand">
+				<img src="{{ url_for('template_logo') }}" alt="" class="brand-logo">
+				<span>Job Portal</span>
+			</a>
+			<div class="header-account">{% include "_header_profile.html" %}</div>
+		</div>
+	</header>
+	<main class="page-shell">
+		{% include "_flash_toasts.html" %}
+		<section class="page-heading">
+			<h1>Admin dashboard</h1>
+			<p>Overview of registered users, candidate applications, and employer job posts.</p>
+		</section>
+
+		<section class="metrics-grid" aria-label="Portal summary">
+			<article class="metric-card">
+				<p class="metric-label">Total users</p>
+				<p class="metric-value">{{ total_users }}</p>
+			</article>
+			<article class="metric-card">
+				<p class="metric-label">Job seekers</p>
+				<p class="metric-value">{{ total_job_seekers }}</p>
+			</article>
+			<article class="metric-card">
+				<p class="metric-label">Employers</p>
+				<p class="metric-value">{{ total_employers }}</p>
+			</article>
+			<article class="metric-card">
+				<p class="metric-label">Applications received</p>
+				<p class="metric-value">{{ total_applications }}</p>
+			</article>
+			<article class="metric-card">
+				<p class="metric-label">Employer-posted jobs</p>
+				<p class="metric-value">{{ total_posted_jobs }}</p>
+			</article>
+			<article class="metric-card">
+				<p class="metric-label">Companies posting jobs</p>
+				<p class="metric-value">{{ total_companies }}</p>
+			</article>
+		</section>
+
+		<section class="panel" aria-labelledby="posted-jobs-heading">
+			<div class="panel-heading">
+				<h2 id="posted-jobs-heading">Companies and posted jobs</h2>
+				<span>{{ total_posted_jobs }} employer-posted jobs</span>
+			</div>
+			{% if posted_jobs %}
+				<div class="table-responsive">
+					<table class="table table-hover jobs-table">
+						<thead>
+							<tr>
+								<th scope="col">Company</th>
+								<th scope="col">Job title</th>
+								<th scope="col">Location</th>
+								<th scope="col">Posted by</th>
+								<th scope="col">Applications</th>
+								<th scope="col">Posted date</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for post, employer, application_count in posted_jobs %}
+								<tr>
+									<td><strong>{{ post.company }}</strong></td>
+									<td><span class="job-title">{{ post.title }}</span></td>
+									<td>{{ post.location }}</td>
+									<td>
+										{{ employer.name }}
+										<span class="subtext">{{ employer.email }}</span>
+									</td>
+									<td><span class="badge text-bg-primary">{{ application_count }}</span></td>
+									<td>{{ post.created_at.strftime("%b %d, %Y") }}</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			{% else %}
+				<div class="empty-state">No employer-posted jobs yet.</div>
+			{% endif %}
+		</section>
+	</main>
+</body>
+</html>

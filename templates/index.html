@@ -1,0 +1,274 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerConnect | Find Your Dream Job</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/job_assistant.css') }}">
+    <style>
+        .portal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .portal-header .brand-logo {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+        .portal-header .navbar-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 0;
+            color: #17243b;
+            font-size: 19px;
+            font-weight: 800;
+            text-decoration: none;
+        }
+        .portal-header .profile-icon {
+            width: 36px;
+            height: 36px;
+            display: inline-grid;
+            place-items: center;
+            overflow: hidden;
+            border: 2px solid #2457d6;
+            border-radius: 50%;
+            color: #fff;
+            background: #2457d6;
+            font-weight: 800;
+            object-fit: cover;
+            box-shadow: 0 0 0 3px #dce8ff;
+        }
+        .portal-header .profile-menu {
+            position: relative;
+        }
+        .portal-header .profile-menu summary {
+            display: flex;
+            cursor: pointer;
+            list-style: none;
+        }
+        .portal-header .profile-menu summary::-webkit-details-marker {
+            display: none;
+        }
+        .portal-header .profile-menu-content {
+            position: absolute;
+            z-index: 20;
+            top: calc(100% + 10px);
+            right: 0;
+            width: min(290px, calc(100vw - 32px));
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #e4e9f1;
+            border-radius: 16px;
+            box-shadow: 0 14px 34px rgba(27, 45, 80, 0.14);
+        }
+        .portal-header .profile-menu-heading {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 9px;
+        }
+        .portal-header .profile-menu-avatar {
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .portal-header .profile-menu-avatar--initial {
+            display: grid;
+            place-items: center;
+            color: #fff;
+            background: #2457d6;
+            font-weight: 800;
+        }
+        .portal-header .profile-menu-identity {
+            display: grid;
+            min-width: 0;
+            gap: 2px;
+        }
+        .portal-header .profile-menu-identity strong {
+            overflow: hidden;
+            color: #17243b;
+            font-size: 14px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .portal-header .profile-menu-identity span {
+            color: #66738a;
+            font-size: 12px;
+            text-transform: capitalize;
+        }
+        .portal-header .profile-menu-links {
+            display: grid;
+            gap: 2px;
+            padding: 8px 0;
+            border-top: 1px solid #e4e9f1;
+            border-bottom: 1px solid #e4e9f1;
+        }
+        .portal-header .profile-menu-content a {
+            display: block;
+            padding: 10px 11px;
+            border-radius: 8px;
+            color: #17243b;
+            text-decoration: none;
+        }
+        .portal-header .profile-menu-content a:hover {
+            background: #f3f6fb;
+        }
+        .portal-header .profile-menu-content .profile-menu-logout {
+            margin-top: 5px;
+            color: #b42318;
+        }
+        .portal-header .profile-icon-link {
+            display: inline-grid;
+            place-items: center;
+            background: #2457d6;
+            border-radius: 50%;
+        }
+        .portal-header .profile-icon-link svg {
+            width: 22px;
+            height: 22px;
+            fill: none;
+            stroke: #fff;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-width: 1.8;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-light bg-white shadow-sm">
+    <div class="container portal-header">
+        <a class="navbar-brand" href="{{ url_for('home') }}">
+            <img class="brand-logo" src="{{ url_for('template_logo') }}" alt="Job Portal">
+            <span>Job Portal</span>
+        </a>
+        <div class="header-account">{% include "_header_profile.html" %}</div>
+    </div>
+</nav>
+
+<section class="hero text-center">
+    <div class="container">
+        <h1>Find Your <span>Dream Job</span></h1>
+        <p>Discover opportunities and take the next step in your career.</p>
+
+        <form class="search-box row g-2"
+              action="#jobs" method="get">
+            <div class="col-md">
+                <input type="text" name="keyword"
+                       class="form-control"
+                       placeholder="Job title or company">
+            </div>
+
+            <div class="col-md">
+                <input type="text" name="location"
+                       class="form-control"
+                       placeholder="Enter location">
+            </div>
+
+            <div class="col-md-auto">
+                <button class="btn btn-primary w-100" type="submit">
+                    Search Jobs
+                </button>
+            </div>
+        </form>
+
+        <p class="popular-text">
+            Popular searches: Python Developer, Testing, Web Developer
+        </p>
+    </div>
+</section>
+
+<section class="container py-5" id="categories">
+    <div class="section-heading">
+        <h2>Explore Job Categories</h2>
+        <p>Find opportunities that match your interests.</p>
+    </div>
+
+    <div class="row g-3 mt-3">
+        <div class="col-6 col-md-3">
+            <div class="category-card">
+                <div class="category-icon">💻</div>
+                <h5>IT & Software</h5>
+                <p>Development and technology</p>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="category-card">
+                <div class="category-icon">🧪</div>
+                <h5>Software Testing</h5>
+                <p>QA and quality assurance</p>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="category-card">
+                <div class="category-icon">📊</div>
+                <h5>Data & Analytics</h5>
+                <p>Data and business insights</p>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="category-card">
+                <div class="category-icon">🎓</div>
+                <h5>Internships</h5>
+                <p>Start your career journey</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="jobs-section py-5" id="jobs">
+    <div class="container">
+        <div class="section-heading">
+            <h2>Featured Jobs</h2>
+            <p>Explore some of our latest opportunities.</p>
+        </div>
+
+        <div class="row g-4 mt-3">
+            {% for job in jobs %}
+            <div class="col-md-6 col-lg-4">
+                <div class="job-card">
+                    <span class="job-type">{{ job.type }}</span>
+
+                    <h4>{{ job.title }}</h4>
+                    <p class="company">{{ job.company }}</p>
+
+                    <p>📍 {{ job.location }}</p>
+                    <p>💰 {{ job.salary }}</p>
+
+                    <a href="#"
+                       class="btn btn-outline-primary w-100">
+                        View Details
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<footer class="text-center py-4">
+    <p class="mb-0">
+        © 2026 CareerConnect. Your career starts here.
+    </p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+{% include "_job_assistant.html" %}
+</body>
+</html>
