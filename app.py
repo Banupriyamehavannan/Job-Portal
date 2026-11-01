@@ -405,17 +405,17 @@ def migrate_user_application_profile(connection):
     for column_name, (column_type, _) in profile_columns.items():
         if column_name not in columns:
             connection.exec_driver_sql(
-                f"ALTER TABLE user ADD COLUMN {column_name} {column_type}"
+                f'ALTER TABLE "user" ADD COLUMN {column_name} {column_type}'
             )
 
     for column_name, (_, application_column) in profile_columns.items():
         connection.execute(text(
             f"""
-            UPDATE user
+            UPDATE "user"
             SET {column_name} = (
               SELECT job_application.{application_column}
                 FROM job_application
-                WHERE job_application.user_id = user.id
+                WHERE job_application.user_id = "user".id
                 AND job_application.{application_column} IS NOT NULL
                 ORDER BY job_application.submitted_at DESC, job_application.id DESC
                 LIMIT 1
@@ -423,7 +423,7 @@ def migrate_user_application_profile(connection):
             WHERE {column_name} IS NULL
               AND EXISTS (
                 SELECT 1 FROM job_application
-                WHERE job_application.user_id = user.id
+                WHERE job_application.user_id = "user".id
                 AND job_application.{application_column} IS NOT NULL
             )
             """
@@ -443,7 +443,7 @@ def migrate_user_application_profile(connection):
     for column_name, column_type in company_columns.items():
         if column_name not in columns:
             connection.exec_driver_sql(
-                f"ALTER TABLE user ADD COLUMN {column_name} {column_type}"
+                f'ALTER TABLE "user" ADD COLUMN {column_name} {column_type}'
             )
 
 
