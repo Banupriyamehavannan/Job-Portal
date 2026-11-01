@@ -1,4 +1,3 @@
-
 from flask import (
     Flask, abort, flash, jsonify, redirect, render_template, request,
     send_from_directory, session, url_for
@@ -42,20 +41,13 @@ def template_logo():
 app.config["SECRET_KEY"] = os.environ.get(
     "SECRET_KEY", "change-this-secret-key"
 )
-database_url = os.environ.get(
-    "DATABASE_URL", "sqlite:///jobportal.db"
-)
 
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace(
-        "postgres://", "postgresql+psycopg://", 1
-    )
-elif database_url.startswith("postgresql://"):
-    database_url = database_url.replace(
-        "postgresql://", "postgresql+psycopg://", 1
-    )
+# Render PostgreSQL URL fix (postgres:// to postgresql://)
+db_url = os.environ.get("DATABASE_URL", "sqlite:///jobportal.db")
+if db_url and db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["MAX_CONTENT_LENGTH"] = 26 * 1024 * 1024
 app.config["SESSION_COOKIE_HTTPONLY"] = True
@@ -2120,11 +2112,15 @@ def saved_jobs():
             SavedJob.job_title.contains(title_filter, autoescape=True)
         )
     if month_filter:
-        saved_jobs_query = saved_jobs_query.filter(
-            func.strftime(
-                "%Y-%m", SavedJob.saved_at, "+5 hours", "+30 minutes"
-            ) == month_filter
-        )
+        # Cross-database compatible month filtering
+        if db.engine.name == 'postgresql':
+            saved_jobs_query = saved_jobs_query.filter(
+                func.to_char(SavedJob.saved_at + text("INTERVAL '5 hours 30 minutes'"), 'YYYY-MM') == month_filter
+            )
+        else:
+            saved_jobs_query = saved_jobs_query.filter(
+                func.strftime("%Y-%m", SavedJob.saved_at, "+5 hours", "+30 minutes") == month_filter
+            )
     if start_utc:
         saved_jobs_query = saved_jobs_query.filter(SavedJob.saved_at >= start_utc)
     if end_utc:
@@ -2135,20 +2131,20 @@ def saved_jobs():
     total_saved_job_count = SavedJob.query.filter_by(
         user_id=current_user.id
     ).count()
+    
+    if db.engine.name == 'postgresql':
+        saved_months_query = db.session.query(
+            func.to_char(SavedJob.saved_at + text("INTERVAL '5 hours 30 minutes'"), 'YYYY-MM').label('month')
+        )
+    else:
+        saved_months_query = db.session.query(
+            func.strftime("%Y-%m", SavedJob.saved_at, "+5 hours", "+30 minutes").label('month')
+        )
+    
     saved_months = [
-        (month, datetime.strptime(month, "%Y-%m").strftime("%B %Y"))
-        for (month,) in db.session.query(
-            func.strftime(
-                "%Y-%m", SavedJob.saved_at, "+5 hours", "+30 minutes"
-            )
-        ).filter_by(
-            user_id=current_user.id
-        ).distinct().order_by(
-            func.strftime(
-                "%Y-%m", SavedJob.saved_at, "+5 hours", "+30 minutes"
-            ).desc()
-        ).all()
-        if month
+        (row.month, datetime.strptime(row.month, "%Y-%m").strftime("%B %Y"))
+        for row in saved_months_query.filter_by(user_id=current_user.id).distinct().order_by(text('month DESC')).all()
+        if row.month
     ]
     employer_logo_rows = db.session.query(
         SavedJob.id,
@@ -2254,40 +2250,34 @@ def my_applications():
             JobApplication.job_title.ilike(f"%{filters['job_title']}%")
         )
     if filters["month"]:
-        query = query.filter(
-            func.strftime(
-                "%Y-%m",
-                JobApplication.submitted_at,
-                "+5 hours",
-                "+30 minutes"
-            ) == filters["month"]
-        )
+        if db.engine.name == 'postgresql':
+            query = query.filter(
+                func.to_char(JobApplication.submitted_at + text("INTERVAL '5 hours 30 minutes'"), 'YYYY-MM') == filters["month"]
+            )
+        else:
+            query = query.filter(
+                func.strftime("%Y-%m", JobApplication.submitted_at, "+5 hours", "+30 minutes") == filters["month"]
+            )
     if start_utc:
         query = query.filter(JobApplication.submitted_at >= start_utc)
     if end_utc:
         query = query.filter(JobApplication.submitted_at < end_utc)
 
     applications = query.order_by(JobApplication.submitted_at.desc()).all()
+    
+    if db.engine.name == 'postgresql':
+        app_months_query = db.session.query(
+            func.to_char(JobApplication.submitted_at + text("INTERVAL '5 hours 30 minutes'"), 'YYYY-MM').label('month')
+        )
+    else:
+        app_months_query = db.session.query(
+            func.strftime("%Y-%m", JobApplication.submitted_at, "+5 hours", "+30 minutes").label('month')
+        )
+
     application_months = [
-        (month, datetime.strptime(month, "%Y-%m").strftime("%B %Y"))
-        for (month,) in db.session.query(
-            func.strftime(
-                "%Y-%m",
-                JobApplication.submitted_at,
-                "+5 hours",
-                "+30 minutes"
-            )
-        ).filter_by(
-            user_id=current_user.id
-        ).distinct().order_by(
-            func.strftime(
-                "%Y-%m",
-                JobApplication.submitted_at,
-                "+5 hours",
-                "+30 minutes"
-            ).desc()
-        ).all()
-        if month
+        (row.month, datetime.strptime(row.month, "%Y-%m").strftime("%B %Y"))
+        for row in app_months_query.filter_by(user_id=current_user.id).distinct().order_by(text('month DESC')).all()
+        if row.month
     ]
     application_logo_urls = {}
     portal_application_ids = [
