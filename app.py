@@ -2811,7 +2811,9 @@ def logout():
         csrf_token=application_csrf_token()
     )
 
-
+@app.route("/sw.js")
+def service_worker():
+    return send_from_directory(app.root_path, "sw.js")
 # Create database tables automatically
 with app.app_context():
     db.create_all()
