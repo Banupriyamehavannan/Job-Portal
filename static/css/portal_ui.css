@@ -69,6 +69,9 @@ summary:focus-visible {
 
 .header-inner {
 	min-height: 72px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 }
 
 .page-shell {
@@ -82,6 +85,12 @@ summary:focus-visible {
 
 .brand {
 	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	text-decoration: none;
+	color: var(--ink);
+	font-weight: 800;
 }
 
 .header-links,
@@ -116,6 +125,9 @@ summary:focus-visible {
 }
 
 .brand-logo {
+	width: 40px;
+	height: 40px;
+	object-fit: contain;
 	filter: drop-shadow(0 2px 3px rgba(27, 45, 80, 0.08));
 }
 
@@ -205,40 +217,8 @@ textarea.form-control {
 .employer-cta,
 .empty-state {
 	box-shadow: var(--card-shadow);
-}
-
-.metric-card,
-.panel,
-.application-card,
-.job-card,
-.application-panel,
-.job-summary,
-.form-panel,
-.posted-panel,
-.company-profile,
-.application-filters,
-.search-panel,
-.benefit-card,
-.employer-cta,
-.empty-state {
 	border-color: #e1e7f0;
 	border-radius: 14px;
-}
-
-.metric-card,
-.panel,
-.application-card,
-.job-card,
-.application-panel,
-.job-summary,
-.form-panel,
-.posted-panel,
-.company-profile,
-.application-filters,
-.search-panel,
-.benefit-card,
-.employer-cta,
-.empty-state {
 	background-color: #fff;
 }
 
@@ -560,39 +540,30 @@ textarea.form-control {
 
 @media (max-width: 700px) {
 	.header-inner {
-		min-height: 64px;
+		min-height: 60px;
+		padding-left: 16px !important;
+		padding-right: 16px !important;
+		flex-wrap: nowrap !important;
 		gap: 12px;
-		flex-wrap: wrap;
 	}
 
-	.header-links,
-	.header-actions {
-		display: flex;
-		gap: 10px;
-		min-width: 0;
+	.brand {
+		font-size: 17px;
 	}
 
-	.header-links a,
-	.header-actions a {
-		max-width: 100%;
-		overflow-wrap: anywhere;
+	.brand-logo {
+		width: 34px;
+		height: 34px;
 	}
 
-	.header-links {
-		flex-wrap: wrap;
-	}
-
-	.header-actions {
-		flex-wrap: wrap;
+	.header-account {
+		flex: 0 0 auto;
 	}
 
 	.page-shell {
 		padding-top: 26px !important;
-	}
-
-	.page-shell > .page-heading:first-child {
-		align-items: flex-start;
-		flex-direction: column;
+		padding-right: 16px !important;
+		padding-left: 16px !important;
 	}
 
 	.table-responsive {
@@ -616,12 +587,6 @@ textarea.form-control {
 }
 
 @media (max-width: 700px) {
-	.header-inner,
-	.page-shell {
-		padding-right: 20px !important;
-		padding-left: 20px !important;
-	}
-
 	.page-heading h1,
 	.intro h1 {
 		font-size: clamp(26px, 7vw, 34px);
@@ -668,22 +633,6 @@ textarea.form-control {
 }
 
 @media (max-width: 600px) {
-	.header-inner {
-		align-items: center;
-	}
-
-	.header-inner > nav,
-	.header-inner > .header-actions,
-	.header-inner > .header-links {
-		gap: 10px;
-	}
-
-	.header-inner > nav a,
-	.header-inner > .header-actions a,
-	.header-inner > .header-links a {
-		font-size: 13px;
-	}
-
 	.search-panel .filter-grid,
 	.application-filters .filter-grid {
 		grid-template-columns: minmax(0, 1fr);
@@ -714,19 +663,8 @@ textarea.form-control {
 }
 
 @media (max-width: 420px) {
-	.header-inner {
-		align-items: flex-start;
-	}
-
-	.header-inner > nav,
-	.header-inner > .header-actions,
-	.header-inner > .header-links {
-		width: 100%;
-		justify-content: flex-start;
-	}
-
 	.brand {
-		font-size: 17px;
+		font-size: 16px;
 	}
 
 	.application-filters .filter-actions {
