@@ -1,0 +1,158 @@
+.upload-preview {
+	display: grid;
+	justify-items: start;
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.upload-preview[hidden] {
+	display: none;
+}
+
+.upload-preview-image {
+	display: block;
+	max-width: min(100%, 360px);
+	max-height: 220px;
+	border: 1px solid #dfe5ef;
+	border-radius: 9px;
+	background: #f5f7fb;
+	object-fit: cover;
+}
+
+.upload-preview-image-square {
+	width: 120px;
+	height: 120px;
+	border-radius: 50%;
+}
+
+.upload-preview-image-landscape {
+	width: min(100%, 360px);
+	height: 120px;
+}
+
+.upload-preview-name,
+.upload-preview-note {
+	color: #59677d;
+	font-size: 13px;
+	overflow-wrap: anywhere;
+}
+
+.upload-resume-frame {
+	width: min(100%, 520px);
+	height: 320px;
+	border: 1px solid #dfe5ef;
+	border-radius: 9px;
+	background: #fff;
+}
+
+.image-crop-dialog {
+	width: min(620px, calc(100% - 24px));
+	max-width: 620px;
+	max-height: min(92vh, 900px);
+	padding: 0;
+	border: 0;
+	border-radius: 16px;
+	color: #17243b;
+	box-shadow: 0 24px 80px rgba(13, 26, 50, 0.3);
+}
+
+.image-crop-dialog::backdrop {
+	background: rgba(15, 25, 43, 0.68);
+}
+
+.image-crop-content {
+	display: grid;
+	gap: 18px;
+	padding: 22px;
+}
+
+.image-crop-heading h2 {
+	margin: 0;
+	font-size: 20px;
+	font-weight: 750;
+}
+
+.image-crop-heading p {
+	margin: 5px 0 0;
+	color: #66738a;
+	font-size: 14px;
+}
+
+.image-crop-stage {
+	display: grid;
+	max-height: 58vh;
+	place-items: center;
+	overflow: hidden;
+	border-radius: 10px;
+	background: #101725;
+}
+
+.image-crop-stage canvas {
+	display: block;
+	width: auto;
+	max-width: 100%;
+	max-height: 58vh;
+	height: auto;
+	touch-action: none;
+	cursor: grab;
+}
+
+.image-crop-stage canvas:active {
+	cursor: grabbing;
+}
+
+.image-crop-zoom {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 12px;
+	align-items: center;
+	font-size: 14px;
+	font-weight: 650;
+}
+
+.image-crop-zoom input {
+	width: 100%;
+	accent-color: #2457d6;
+}
+
+.image-crop-error {
+	margin: 0;
+	color: #b42318;
+	font-size: 14px;
+}
+
+.image-crop-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+}
+
+.image-crop-actions button {
+	min-height: 40px;
+	padding: 8px 14px;
+	border: 1px solid #cbd4e2;
+	border-radius: 8px;
+	background: #fff;
+	color: #243047;
+	font: inherit;
+	font-weight: 650;
+	cursor: pointer;
+}
+
+.image-crop-actions .image-crop-confirm {
+	border-color: #2457d6;
+	background: #2457d6;
+	color: #fff;
+}
+
+@media (max-width: 480px) {
+	.image-crop-content {
+		gap: 14px;
+		padding: 16px;
+	}
+
+	.image-crop-stage,
+	.image-crop-stage canvas {
+		max-height: 48vh;
+	}
+}

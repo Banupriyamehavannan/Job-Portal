@@ -1489,7 +1489,7 @@ def jobs():
             "category": job["category"],
             "excerpt": job["excerpt"][:500]
         }
-        for job in all_jobs
+        for job in all_jobs[:HIMALAYAS_PAGE_SIZE]
     ]
     has_next = bool(api_jobs) if search_mode else bool(next_cursor)
 
@@ -1719,7 +1719,7 @@ def post_job():
             db.session.add(post)
             db.session.commit()
             flash("Your job is now published on Job Portal.", "success")
-            return redirect(url_for("post_job"))
+            return redirect(url_for("jobs"))
 
     employer_posts = JobPost.query.filter_by(
         employer_id=current_user.id

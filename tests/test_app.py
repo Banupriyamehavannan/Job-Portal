@@ -1,4 +1,6 @@
+import json
 import os
+import re
 import tempfile
 import unittest
 from datetime import datetime
@@ -97,6 +99,41 @@ class JobPortalTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Software Engineer", response.data)
         self.assertIn(b"Example Co", response.data)
+        self.assertIn(b'class="job-card-details"', response.data)
+        self.assertIn(b"Apply on Job", response.data)
+
+    def test_job_assistant_only_receives_twenty_jobs(self):
+        with portal.app.app_context():
+            additional_jobs = [
+                JobPost(
+                    employer_id=self.employer_id,
+                    title=f"Software Engineer {index}",
+                    company="Example Co",
+                    location="Chennai",
+                    employment_type="Full-time",
+                    experience_level="Mid-level",
+                    skills="Python",
+                    requirements="Build reliable software",
+                    description="Work with our engineering team.",
+                    application_url="",
+                )
+                for index in range(portal.HIMALAYAS_PAGE_SIZE)
+            ]
+            db.session.add_all(additional_jobs)
+            db.session.commit()
+
+        with patch.object(portal, "get_himalayas_jobs", return_value=([], "", None)):
+            response = self.client.get("/jobs")
+
+        self.assertEqual(response.status_code, 200)
+        match = re.search(
+            rb'<script id="job-assistant-listings" type="application/json">(.*?)</script>',
+            response.data,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(match)
+        assistant_jobs = json.loads(match.group(1))
+        self.assertEqual(len(assistant_jobs), portal.HIMALAYAS_PAGE_SIZE)
 
     def test_login_requires_csrf_token(self):
         response = self.client.post(
@@ -260,6 +297,42 @@ class JobPortalTests(unittest.TestCase):
         self.log_in_as(self.employer_id)
         response = self.client.post("/employer/post-job", data={"title": "New role"})
         self.assertEqual(response.status_code, 400)
+
+    def test_employer_is_redirected_to_jobs_after_posting_job(self):
+        self.log_in_as(self.employer_id)
+        with portal.app.app_context():
+            employer = db.session.get(User, self.employer_id)
+            employer.company_name = "Example Co"
+            employer.company_position = "Hiring Manager"
+            employer.company_location = "Chennai"
+            employer.company_employee_count = "11-50"
+            employer.company_industry = "Technology"
+            employer.company_logo_filename = "logo.png"
+            employer.company_photo_filename = "company.png"
+            db.session.commit()
+
+        token = self.csrf_token("/employer/post-job")
+        response = self.client.post(
+            "/employer/post-job",
+            data={
+                "_csrf_token": token,
+                "title": "Backend Engineer",
+                "location": "Remote",
+                "employment_type": "Full-time",
+                "experience_level": "Mid-level",
+                "skills": "Python",
+                "requirements": "Build APIs",
+                "description": "Work on backend services.",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.location.endswith("/jobs"))
+        with portal.app.app_context():
+            self.assertEqual(
+                JobPost.query.filter_by(title="Backend Engineer").count(),
+                1,
+            )
 
     def test_ai_job_description_api_requires_csrf_token(self):
         self.log_in_as(self.employer_id)

@@ -7,6 +7,8 @@
 	<title>Apply for {{ job.title }} | Job Portal</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/job_assistant.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/upload_preview.css') }}">
+	<script src="{{ url_for('static', filename='js/upload_preview.js') }}" defer></script>
 	<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
 <meta name="theme-color" content="#0d6efd">
 
@@ -291,8 +293,6 @@
 		const resumeInput = document.getElementById("resume");
 		if (resumeInput) {
 			const resumeChoiceInputs = document.querySelectorAll('input[name="resume_choice"][type="radio"]');
-			const profileImageInput = document.getElementById("profile_image");
-			const coverImageInput = document.getElementById("cover_image");
 
 			function updateResumeInput() {
 				const selectedResumeChoice = document.querySelector('input[name="resume_choice"]:checked');
@@ -303,40 +303,6 @@
 			resumeChoiceInputs.forEach((input) => input.addEventListener("change", updateResumeInput));
 			updateResumeInput();
 
-			profileImageInput.addEventListener("change", () => {
-				const file = profileImageInput.files[0];
-				if (!file) return;
-				const reader = new FileReader();
-				reader.addEventListener("load", () => {
-					const avatar = document.getElementById("profile-avatar");
-					const preview = document.createElement("img");
-					preview.className = "profile-icon";
-					preview.id = "profile-avatar";
-					preview.alt = "Selected profile image preview";
-					preview.src = reader.result;
-					avatar.replaceWith(preview);
-				});
-				reader.readAsDataURL(file);
-			});
-
-			coverImageInput.addEventListener("change", () => {
-				const file = coverImageInput.files[0];
-				if (!file) return;
-				const reader = new FileReader();
-				reader.addEventListener("load", () => {
-					let preview = document.getElementById("cover-image-preview");
-					if (!preview) {
-						preview = document.createElement("img");
-						preview.id = "cover-image-preview";
-						preview.className = "img-fluid rounded mt-2";
-						preview.alt = "Selected cover image preview";
-						preview.style.maxHeight = "120px";
-						coverImageInput.after(preview);
-					}
-					preview.src = reader.result;
-				});
-				reader.readAsDataURL(file);
-			});
 		}
 	</script>
 	{% include "_job_assistant.html" %}
