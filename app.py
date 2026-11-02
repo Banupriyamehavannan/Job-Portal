@@ -14,6 +14,7 @@ from sqlalchemy.schema import CreateTable
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from werkzeug.exceptions import BadRequest
 from datetime import date, datetime, timedelta, timezone
 from urllib.parse import urlparse
 import hashlib
@@ -1033,7 +1034,10 @@ def job_assistant():
     payload = request.get_json()
     if not isinstance(payload, dict):
         return {"error": "The assistant request is invalid."}, 400
-    require_csrf_token(payload.get("csrf_token", ""))
+    try:
+        require_csrf_token(payload.get("csrf_token", ""))
+    except BadRequest as exc:
+        return {"error": exc.description}, 400
 
     message = payload.get("message")
     jobs = payload.get("jobs", [])

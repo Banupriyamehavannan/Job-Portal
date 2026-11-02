@@ -60,7 +60,12 @@
 					csrf_token: assistant.dataset.csrfToken
 				})
 			});
-			const result = await response.json();
+			let result;
+			try {
+				result = await response.json();
+			} catch {
+				throw new Error("The server returned an unexpected response. Refresh the page and try again.");
+			}
 			if (!response.ok) throw new Error(result.error || "Could not contact the assistant.");
 
 			loadingMessage.textContent = result.reply;

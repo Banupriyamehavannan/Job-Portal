@@ -353,6 +353,40 @@ class JobPortalTests(unittest.TestCase):
                 json={"message": "Find software jobs", "jobs": []},
             )
         self.assertEqual(response.status_code, 400)
+        self.assertTrue(response.is_json)
+        self.assertIn("form expired", response.json["error"].lower())
+
+    def test_ai_assistant_is_available_to_logged_out_users(self):
+        token = self.csrf_token("/")
+        gemini_response = {
+            "candidates": [{
+                "content": {
+                    "parts": [{
+                        "text": json.dumps({
+                            "reply": "You can browse available jobs.",
+                            "recommended_indices": [],
+                        })
+                    }]
+                }
+            }]
+        }
+        with (
+            patch.object(portal, "GEMINI_API_KEY", "test-key"),
+            patch.object(portal.requests, "post") as gemini_post,
+        ):
+            gemini_post.return_value.json.return_value = gemini_response
+            response = self.client.post(
+                "/api/job-assistant",
+                json={
+                    "message": "How do I find jobs?",
+                    "jobs": [],
+                    "csrf_token": token,
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json["reply"], "You can browse available jobs.")
+        self.assertEqual(response.json["recommended_indices"], [])
 
     def test_job_seeker_can_save_a_local_job(self):
         self.log_in_as(self.seeker_id)
